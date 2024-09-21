@@ -394,7 +394,7 @@ class BatchDeepRF:
             pd.DataFrame(results, columns=columns_agg, dtype=float)\
                         .to_csv(file_path_agg, mode='a', index=False, header=not os.path.exists(file_path_agg))
             end = time.time()
-            print(f'Experiments for (D_r, B, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {beta:.2E}) took = {end-start:.2E}s', end="\r")
+            print(f'Experiments for (D_r, B, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {beta:.2E}) took = {end-start:.2E}s')
             k += n_repeats
 
    
