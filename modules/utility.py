@@ -1,5 +1,8 @@
 # A helper module for various sub-tasks
 from time import time
+import pandas as pd
+import glob, os
+import numpy as np
 
 def timer(func):
 	"""
@@ -43,3 +46,22 @@ class ExperimentLogger:
     def add(self, *objects):
         for object in objects:
             self.addSingle(object)
+
+
+def aggregate_beta(dynamical_system):
+    folder = f'../data/{dynamical_system}'
+    folders = glob.glob(folder + '/*/*/beta')
+    for folder in folders:
+        print(f"Working on {folder} ...")
+        agg = []
+        for file in glob.glob(folder + '/*.csv'):
+            filename = os.path.basename(file)
+            if filename != 'beta.csv':
+                D_r, B = filename[9:].split('_')
+                D_r, B = int(D_r), int(B.split('.')[0][2:])
+                print(file, D_r, B)
+                data = pd.read_csv(file)
+                idx = np.argmax(data['tau_f_nmse_mean'])
+                agg.append([D_r, B] + data.iloc[idx].to_list())
+        pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
+                    .to_csv(folder + '/beta.csv', index=False, mode='w')

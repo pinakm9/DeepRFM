@@ -155,7 +155,7 @@ class KS:
         self.stepnum += 1
         self.t       += self.dt
 
-    @ut.timer
+    # @ut.timer
     def simulate(self, nsteps=None, iout=None, restart=False, correction=[]):
         #
         # If not provided explicitly, get internal values
