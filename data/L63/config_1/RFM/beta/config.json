@@ -5,7 +5,7 @@
   "name": "RFM",
   "L0": 0.4,
   "L1": 3.5,
-  "beta": 1.36e-09,
+  "beta": 7.12e-08,
   "normalize": false
 }{
   "parameters": 57344
