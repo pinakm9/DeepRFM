@@ -2,11 +2,13 @@
   "D": 3,
   "D_r": 512,
   "B": 1,
-  "name": "RFM",
+  "name": "SkipRFM",
   "L0": 0.4,
   "L1": 3.5,
-  "beta": 2.8e-09,
+  "beta": 3.5200000000000003e-09,
   "normalize": false
+}{
+  "parameters": 3584
 }{
   "parameters": 3584
 }
