@@ -20,11 +20,10 @@ class LocalDeepSkip_2_2(nn.Module):
         self.G = 2
         self.I = 2 
         self.Ng = int(self.D / self.G)
-        self.idx = 2 * (torch.arange(-self.I, self.I+1).reshape(-1, 1) % self.Ng)
-        self.idx = torch.cat([self.idx, self.idx+1], dim=1).flatten()
-        self.idx = torch.vstack([(self.idx + 2*i) % self.D for i in range(self.Ng)])
+        self.idx = torch.arange(-self.I*self.G, (self.I+1)*self.G) % D
+        self.idx = torch.vstack([(self.idx + i*self.G) % D for i in range(self.Ng)])
         self.idy = torch.arange(0, self.G)
-        self.idy = torch.vstack([(self.idy + 2*i) % D for i in range(int(self.Ng))])
+        self.idy = torch.vstack([(self.idy + i*self.G) % D for i in range(int(self.Ng))])
         self.p = (2*self.I + 1)*self.G
         self.q = self.p + self.G
         self.inner = nn.ModuleList([nn.Linear(2*(self.I + 1)*self.G, self.D_r, bias=True) for _ in range(B)])

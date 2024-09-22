@@ -3,3 +3,4 @@ data/*
 !data/L63
 !data/L96
 !data/KS
+modules/__pycache__/*

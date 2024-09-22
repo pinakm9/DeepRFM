@@ -41,15 +41,16 @@ class KS:
         self.nsteps = nsteps
         self.iout   = iout
         self.nout   = int(nsteps/iout)
-        #
+        # precompute Fourier-related quantities
+        self.setup_fourier()
+        
         # set initial condition
         self.IC()
         #
         # initialize simulation arrays
         self.setup_timeseries()
         #
-        # precompute Fourier-related quantities
-        self.setup_fourier()
+        
         #
         # precompute ETDRK4 scalar quantities:
         self.setup_etdrk4()
@@ -96,7 +97,7 @@ class KS:
         self.g  = -0.5j*self.k
 
 
-    def IC(self, u0=None, v0=None, testing=False):
+    def IC(self, u0=None, v0=None, testing=True):
         #
         # Set initial condition, either provided by user or by "template"
         if (v0 is None):

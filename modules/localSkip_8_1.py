@@ -20,11 +20,10 @@ class LocalSkip_8_1(nn.Module):
         self.G = 8 
         self.I = 1
         self.Ng = int(self.D / self.G)
-        self.idx = 2 * (torch.arange(-self.I, self.I+1).reshape(-1, 1) % self.Ng)
-        self.idx = torch.cat([self.idx, self.idx+1], dim=1).flatten()
-        self.idx = torch.vstack([(self.idx + 2*i) % self.D for i in range(self.Ng)])
-        self.idx0 = torch.arange(0, self.G)
-        self.idx0 = torch.vstack([(self.idx0 + 2*i) % self.D for i in range(self.Ng)])
+        self.idx = torch.arange(-self.I*self.G, (self.I+1)*self.G) % D
+        self.idx = torch.vstack([(self.idx + self.G*i) % D for i in range(self.Ng)])
+        self.idy = torch.arange(0, self.G)
+        self.idy = torch.vstack([(self.idy + self.G*i) % D for i in range(self.Ng)])
         self.inner = nn.ModuleList([nn.Linear((2*self.I + 1)*self.G, self.D_r, bias=True)])
         self.outer = nn.ModuleList([nn.Linear(self.D_r, self.G, bias=False)])
 
@@ -56,7 +55,7 @@ class DeepRF(rfm.DeepRF):
     # @ut.timer
     def learn(self, train, seed):
         X = (train.T[:-1][..., self.net.idx]).flatten(0, 1).T
-        Y = (train.T[1:][..., self.net.idx0] - train.T[:-1][..., self.net.idx0]).flatten(0, 1).T
+        Y = (train.T[1:][..., self.net.idy] - train.T[:-1][..., self.net.idy]).flatten(0, 1).T
         indices = torch.randperm(X.shape[1])
         X = X[:, indices[:100000]]
         Y = Y[:, indices[:100000]]
