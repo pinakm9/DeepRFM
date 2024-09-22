@@ -296,8 +296,11 @@ class BatchDeepRF:
 
     def run_single(self, exp_idx:int, model_seed: int, train_idx: int, test_idx: int, **tau_f_kwargs):
         deep_rf = self.drf_type(*self.drf_args)
+        start = time.time()
         deep_rf.learn(self.train[:, train_idx:train_idx+self.training_points], model_seed)
-        return [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs))
+        end = time.time()
+        return [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs)) +\
+               [end-start]
     
 
     @ut.timer
@@ -307,7 +310,7 @@ class BatchDeepRF:
         if os.path.exists(file_path):
             os.remove(file_path)
         columns = ['l', 'model_seed', 'train_index', 'test_index',\
-                   'tau_f_nmse', 'tau_f_se', 'nmse', 'se']
+                   'tau_f_nmse', 'tau_f_se', 'nmse', 'se', 'train_time']
         
         model_seeds: int = np.random.randint(1e8, size=n_repeats)
         self.training_points: int = training_points
@@ -327,6 +330,9 @@ class BatchDeepRF:
             print(f'Time taken = {end-start:.2E}s')
             del results
             k += batch_size
+            if self.drf.device == 'cuda':
+                torch.cuda.empty_cache()
+
         if save_best:
             print('Saving the best and worst models ...')
             data = self.get_data()
@@ -341,6 +347,7 @@ class BatchDeepRF:
             deep_rf = self.drf_type(*self.drf_args)
             deep_rf.learn(self.train[:, train_idx:train_idx+self.training_points], int(data['model_seed'][idx]))
             deep_rf.save('worst')
+        
 
     
     def get_data(self):
