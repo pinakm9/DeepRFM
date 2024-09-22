@@ -1,0 +1,14 @@
+{
+  "D": 3,
+  "D_r": 512,
+  "B": 4,
+  "name": "EulerN",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 4.24e-10,
+  "normalize": false
+}{
+  "parameters": 14336
+}{
+  "parameters": 20480
+}

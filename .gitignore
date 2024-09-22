@@ -1,2 +1,5 @@
 data/*
 **/.DS_Store
+!data/L63
+!data/L96
+!data/KS
