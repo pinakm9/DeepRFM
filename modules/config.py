@@ -30,7 +30,7 @@ def config_1(dynamical_system):
                          "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]],\
                          "LocalSkip_2_2": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
                          "LocalDeepSkip_2_2":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]]},\
-                         {"LocalDeepSkip_2_2":[[4096, 1], [4096, 2], [4096, 4], [4096, 8], [4096, 16]]}]
+                         {"LocalDeepSkip_2_2":[[4096, 2], [4096, 4], [4096, 8], [8192, 2], [8192, 4], [16384, 2]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
