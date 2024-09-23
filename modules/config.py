@@ -16,7 +16,7 @@ def config_1(dynamical_system):
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
     elif dynamical_system == 'L96':
-        prediction_time_config = {"error_threshold": 0.09, "dt": 0.01, "Lyapunov_time": 1/2.27}
+        prediction_time_config = {"error_threshold": 0.25, "dt": 0.01, "Lyapunov_time": 1/2.27}
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}

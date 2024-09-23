@@ -66,3 +66,9 @@ def collect_beta():
                     agg.append([D_r, B] + data.iloc[idx].to_list())
             pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
                         .to_csv(folder + '/beta.csv', index=False, mode='w')
+            
+
+
+
+def get_data(dynamical_system, config_id, architecture, D_r, B):
+    return pd.read_csv(f'../data/{dynamical_system}/config_{config_id}/{architecture}/D_r-{D_r}_B-{B}/batch_data.csv')
