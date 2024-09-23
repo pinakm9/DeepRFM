@@ -11,7 +11,8 @@ def config_1(dynamical_system):
                             "DeepSkip":[[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]]}
         arch_configs = [{"RFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
                          "SkipRFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                         "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]]}] 
+                         "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]]}, 
+                         {"DeepSkip":[[2048, 1], [2048, 2], [2048, 4], [2048, 8]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
