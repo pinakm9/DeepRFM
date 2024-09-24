@@ -128,10 +128,11 @@ class DeepRF:
         """ 
         with torch.no_grad():
             if len(u.shape) < 2:
-                trajectory = torch.zeros((n_steps, self.sampler.dim), device=self.device)
+                trajectory = torch.zeros((n_steps, len(u)), device=self.device)
 
             else:
                 trajectory = torch.zeros((n_steps, u.shape[0], u.shape[1]), device=self.device)
+            print(f"Inside ms_forecast: {trajectory.shape} {u.shape}")
             trajectory[0] = u
             for step in range(n_steps - 1):
                 u = self.forecast(u)
@@ -285,6 +286,8 @@ class BatchDeepRF:
             tau_f_nmse *= (dt / Lyapunov_time)
             tau_f_se *= (dt / Lyapunov_time)
             return torch.tensor([tau_f_nmse, tau_f_se, nmse, se], device=drf.device)
+        
+
         
 
 
