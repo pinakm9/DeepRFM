@@ -145,8 +145,8 @@ def config_test(dynamical_system):
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
         beta_config = {"negative_log10_range": [-5, 8], "resolution":5, "n_repeats": 2,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"LocalSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                            "LocalDeepSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1],[8192, 1], [16384, 1]]}
+        beta_arch_config = {"LocalSkip_8_1": [[512, 1], [1024, 1], [2048, 1]],\
+                            "LocalDeepSkip_8_1": [[512, 1], [1024, 1], [2048, 1]]}
         arch_configs = [{"LocalSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
                          "LocalDeepSkip_8_1":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
