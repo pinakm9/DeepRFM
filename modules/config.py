@@ -143,7 +143,7 @@ def config_test(dynamical_system):
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
-        beta_config = {"negative_log10_range": [-5, 8], "resolution":5, "n_repeats": 1,\
+        beta_config = {"negative_log10_range": [-5, 8], "resolution":5, "n_repeats": 2,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"LocalSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
                             "LocalDeepSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1],[8192, 1], [16384, 1]]}
