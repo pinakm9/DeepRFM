@@ -11,14 +11,14 @@ from torch import nn
 import rfm
 
 
-class LocalSkip_2_2(nn.Module):
+class LocalSkip_16_1(nn.Module):
     def __init__(self, D, D_r, B):
         super().__init__()
         self.D = D
         self.D_r = D_r
         self.B = B
-        self.G = 2 
-        self.I = 2
+        self.G = 16 
+        self.I = 1
         self.Ng = int(self.D / self.G)
         self.idx = torch.arange(-self.I*self.G, (self.I+1)*self.G) % D
         self.idx = torch.vstack([(self.idx + i*self.G) % D for i in range(self.Ng)])
@@ -45,7 +45,7 @@ class DeepRF(rfm.DeepRF):
             beta: regularization parameter
         """        
         super().__init__(D_r, B, L0, L1, Uo, beta, name, save_folder, normalize)
-        self.net = LocalSkip_2_2(self.sampler.dim, D_r, B)
+        self.net = LocalSkip_16_1(self.sampler.dim, D_r, B)
         self.net.to(self.device)
         self.logger.update(start=False, kwargs={'parameters': self.count_params()})
         self.sampler.update((Uo.T[:-1][..., self.net.idx]).flatten(0, 1).T)

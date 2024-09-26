@@ -3,6 +3,7 @@ from time import time
 import pandas as pd
 import glob, os
 import numpy as np
+import matplotlib.pyplot as plt
 
 def timer(func):
 	"""
@@ -72,3 +73,39 @@ def collect_beta():
 
 def get_data(dynamical_system, config_id, architecture, D_r, B):
     return pd.read_csv(f'../data/{dynamical_system}/config_{config_id}/{architecture}/D_r-{D_r}_B-{B}/batch_data.csv')
+
+
+def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, **tau_f_kwargs):
+    n, m = data.shape
+    x, y = np.linspace(1, n, num=n), np.linspace(1, m, num=m) * tau_f_kwargs['dt'] / tau_f_kwargs['Lyapunov_time']
+    if drf is None:
+        fig = plt.figure(figsize=(width, 5))
+        ax = fig.add_subplot(111)
+        origin = 'lower'
+        im = ax.contourf(x, y, data.T, levels=levels, cmap=cmap, origin=origin)
+        # ax.contour(x, y, data.T, levels=levels, linewidths=0.5, colors='k')
+        # ax.contour(x, y, data.T, origin=origin, linewidths=0.15)
+        fig.colorbar(im, ax=[ax])
+    else:
+        fig = plt.figure(figsize=(5, 5))
+        ax = fig.add_subplot(121)
+        ax1 = fig.add_subplot(122)
+        im = ax.contourf(x, y, data.T, levels=levels, cmap=cmap)
+        z = drf.multistep_forecast(data[:, 0], m).cpu().numpy()
+        print(z.shape)
+        ax1.contourf(x, y, z.T, levels=levels, cmap=cmap)
+        # ax1.set_ylabel(r'$t/T^{\Lambda_1}$')
+        ax1.set_title(r'Forecast')
+        fig.colorbar(im, ax=[ax, ax1])
+        ax1.set_yticks([])
+    ax.set_ylabel(r'$t/T^{\Lambda_1}$')
+    ax.set_title(r'Truth')
+    if filename is not None:
+        plt.savefig(f'../data/plots/{filename}.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
+
+
+def autocorr(x):
+    result = numpy.correlate(x, x, mode='full')
+    return result[result.size//2:]

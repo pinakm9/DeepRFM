@@ -132,7 +132,6 @@ class DeepRF:
 
             else:
                 trajectory = torch.zeros((n_steps, u.shape[0], u.shape[1]), device=self.device)
-            print(f"Inside ms_forecast: {trajectory.shape} {u.shape}")
             trajectory[0] = u
             for step in range(n_steps - 1):
                 u = self.forecast(u)

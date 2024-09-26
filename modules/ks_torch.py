@@ -1,9 +1,8 @@
 from torch.fft import fft, ifft
-import numpy as torch
+import numpy as np
 import utility as ut
 import os
 import torch
-import numpy as np
 
 torch.set_default_dtype(torch.float64)
 
@@ -23,7 +22,7 @@ class KS:
     # Temporal discretization: exponential time differencing fourth-order Runge-Kutta
     # see AK Kassam and LN Trefethen, SISC 2005
 
-    def __init__(self, L=16, N=128, dt=0.25, nsteps=None, tend=150, iout=1):
+    def __init__(self, L=16, N=128, dt=0.25, nsteps=None, tend=150, iout=1, device='cpu'):
         #
         # Initialize
         # L  = float(L); dt = float(dt); tend = float(tend)
@@ -37,108 +36,49 @@ class KS:
         # save to self
         self.L      = L
         self.N      = N
-        self.dx     = 2*np.pi*L/N
+        self.dx     = 2*torch.pi*L/N
         self.dt     = dt
         self.nsteps = nsteps
         self.iout   = iout
         self.nout   = int(nsteps/iout)
-        #
-        # set initial condition
-        self.IC()
-        #
-        # initialize simulation arrays
-        self.setup_timeseries()
-        #
+        self.device = device
         # precompute Fourier-related quantities
-        self.setup_fourier()
-        #
-        # precompute ETDRK4 scalar quantities:
-        self.setup_etdrk4()
-
-
-    def setup_timeseries(self, nout=None):
-        if (nout != None):
-            self.nout = int(nout)
-        # nout+1 so we store the IC as well
-        self.vv = torch.zeros([self.nout+1, self.N])
-        self.tt = torch.zeros(self.nout+1)
-        #
-        # store the IC in [0]
-        self.vv[0,:] = self.v0
-        self.tt[0]   = 0.
-
-
-    def setup_fourier(self, coeffs=None):
-        self.x  = torch.tensor(2*np.pi*self.L*np.r_[0:self.N]/self.N)
-        self.k  = torch.tensor(np.r_[0:self.N/2, 0, -self.N/2+1:0]/self.L) # Wave numbers
+        self.x  = torch.tensor(2*torch.pi*self.L*np.r_[0:self.N]/self.N, device=self.device)
+        self.k  = torch.tensor(np.r_[0:self.N/2, 0, -self.N/2+1:0]/self.L, device=self.device) # Wave numbers
         # Fourier multipliers for the linear term Lu
-        if (coeffs is None):
-            # normal-form equation
-            self.l = self.k**2 - self.k**4
-        else:
-            # altered-coefficients 
-            self.l = -      coeffs[0]*torch.ones(self.k.shape) \
-                     -      coeffs[1]*1j*self.k             \
-                     + (1 + coeffs[2])  *self.k**2          \
-                     +      coeffs[3]*1j*self.k**3          \
-                     - (1 + coeffs[4])  *self.k**4
-
-
-    def setup_etdrk4(self):
-        self.E  = torch.exp(self.dt*self.l)
-        self.E2 = torch.exp(self.dt*self.l/2.)
-        self.M  = 16                                           # no. of points for complex means
-        self.r  = torch.exp(1j*np.pi*(torch.tensor(np.r_[1:self.M+1]-0.5)/self.M)) # roots of unity
-        self.LR = self.dt*torch.repeat_interleave(self.l[:,None], self.M, axis=1) + torch.repeat_interleave(self.r[None,:], self.N, axis=0)
-        self.Q  = self.dt*torch.real(torch.mean((torch.exp(self.LR/2.) - 1.)/self.LR, 1))
-        self.f1 = self.dt*torch.real( torch.mean( (-4. -    self.LR              + torch.exp(self.LR)*( 4. - 3.*self.LR + self.LR**2) )/(self.LR**3) , 1) )
-        self.f2 = self.dt*torch.real( torch.mean( ( 2. +    self.LR              + torch.exp(self.LR)*(-2. +    self.LR             ) )/(self.LR**3) , 1) )
-        self.f3 = self.dt*torch.real( torch.mean( (-4. - 3.*self.LR - self.LR**2 + torch.exp(self.LR)*( 4. -    self.LR             ) )/(self.LR**3) , 1) )
-        self.g  = -0.5j*self.k
-
-
-    def IC(self, u0=None, v0=None, testing=False):
-        #
-        # Set initial condition, either provided by user or by "template"
-        if (v0 is None):
-            # IC provided in u0 or use template
-            if (u0 is None):
-                # set u0
-                if testing:
-                    # template from AK Kassam and LN Trefethen, SISC 2005
-                    u0 = torch.cos(self.x/self.L)*(1. + torch.sin(self.x/self.L))
-                else:
-                    # random noise
-                    u0 = (torch.rand(self.N) -0.5)*0.01
-            else:
-                # check the itorchut size
-                if (torch.size(u0,0) != self.N):
-                    print('Error: wrong IC array size')
-                    return -1
-                else:
-                    # if ok cast to torch.array
-                    u0 = torch.array(u0)
-            # in any case, set v0:
-            v0 = fft(u0)
-        else:
-            # the initial condition is provided in v0
-            # check the itorchut size
-            if (torch.size(v0,0) != self.N):
-                print('Error: wrong IC array size')
-                return -1
-            else:
-                # if ok cast to torch.array
-                v0 = torch.array(v0)
-                # and transform to physical space
-                u0 = ifft(v0)
-        #
+        self.l = self.k**2 - self.k**4
+        
+        # set initial condition
+        u0 = (torch.cos(self.x / 16) * (1 + torch.sin(self.x / 16))).to(self.device)
+        v0 = fft(u0)
         # and save to self
-        self.u0  = u0
-        self.v0  = v0
         self.v   = v0
         self.t   = 0.
         self.stepnum = 0
         self.ioutnum = 0 # [0] is the initial condition
+        #
+        # initialize simulation arrays
+        # nout+1 so we store the IC as well
+        self.vv = torch.zeros((self.nout+1, self.N), device=self.device)
+        self.uu = torch.zeros((self.N, self.nout+1), device=self.device)
+        self.tt = torch.zeros(self.nout+1, device=self.device)
+        # store the IC in [0]
+        self.vv[0] = v0
+        self.uu[:, 0] = u0
+        self.tt[0] = 0.
+        #
+        # precompute ETDRK4 scalar quantities:
+        self.E  = torch.exp(self.dt*self.l)
+        self.E2 = torch.exp(self.dt*self.l/2.)
+        self.M  = 16                                           # no. of points for complex means
+        self.r  = torch.exp(1j*torch.pi*(torch.tensor(np.r_[1:self.M+1]-0.5/self.M, device=self.device))) # roots of unity
+        self.LR = self.dt*torch.repeat_interleave(self.l[:,None], self.M, axis=1) + torch.repeat_interleave(self.r[None,:], self.N, axis=0)
+        self.Q  = self.dt*torch.real(torch.mean((torch.exp(self.LR/2.) - 1.)/self.LR, 1))
+        self.f1 = self.dt*torch.real(torch.mean( (-4. -    self.LR              + torch.exp(self.LR)*( 4. - 3.*self.LR + self.LR**2) )/(self.LR**3) , 1) )
+        self.f2 = self.dt*torch.real(torch.mean( ( 2. +    self.LR              + torch.exp(self.LR)*(-2. +    self.LR             ) )/(self.LR**3) , 1) )
+        self.f3 = self.dt*torch.real(torch.mean( (-4. - 3.*self.LR - self.LR**2 + torch.exp(self.LR)*( 4. -    self.LR             ) )/(self.LR**3) , 1) )
+        self.g  = -0.5j*self.k
+        
         
 
     def step(self):
@@ -157,156 +97,43 @@ class KS:
         self.t       += self.dt
 
     # @ut.timer
-    def simulate(self, nsteps=None, iout=None, restart=False, correction=[]):
-        #
-        # If not provided explicitly, get internal values
-        if (nsteps is None):
-            nsteps = self.nsteps
-        else:
-            nsteps = int(nsteps)
-            self.nsteps = nsteps
-        if (iout is None):
-            iout = self.iout
-            nout = self.nout
-        else:
-            self.iout = iout
-        if restart:
-            # update nout in case nsteps or iout were changed
-            nout      = int(nsteps/iout)
-            self.nout = nout
-            # reset simulation arrays with possibly updated size
-            self.setup_timeseries(nout=self.nout)
-        #
-        # advance in time for nsteps steps
-        if (correction==[]):
-            for n in range(1,self.nsteps+1):
-                try:
-                    self.step()
-                except FloatingPointError:
-                    #
-                    # something exploded
-                    # cut time series to last saved solution and return
-                    self.nout = self.ioutnum
-                    self.vv.resize((self.nout+1,self.N)) # nout+1 because the IC is in [0]
-                    self.tt.resize(self.nout+1)          # nout+1 because the IC is in [0]
-                    return -1
-                if ( (self.iout>0) and (n%self.iout==0) ):
-                    self.ioutnum += 1
-                    self.vv[self.ioutnum,:] = self.v
-                    self.tt[self.ioutnum]   = self.t
-        else:
-            # lots of code duplication here, but should improve speed instead of having the 'if correction' at every time step
-            for n in range(1,self.nsteps+1):
-                try:
-                    self.step()
-                    self.v += correction
-                except FloatingPointError:
-                    #
-                    # something exploded
-                    # cut time series to last saved solution and return
-                    self.nout = self.ioutnum
-                    self.vv.resize((self.nout+1,self.N)) # nout+1 because the IC is in [0]
-                    self.tt.resize(self.nout+1)          # nout+1 because the IC is in [0]
-                    return -1
-                if ( (self.iout>0) and (n%self.iout==0) ):
-                    self.ioutnum += 1
-                    self.vv[self.ioutnum,:] = self.v
-                    self.tt[self.ioutnum]   = self.t
+    def simulate(self):
+        o = 0
+        for n in range(1, self.nsteps+1):
+            try:
+                self.step()
+            except FloatingPointError:
+                #
+                o += 1
+                print('overflow', o, end='\r')
+                # cut time series to last saved solution and return
+                self.nout = self.ioutnum
+                return -1
+            if ( (self.iout>0) and (n%self.iout==0) ):
+                self.ioutnum += 1
+                self.vv[self.ioutnum, :] = self.v
+                self.uu[:, self.ioutnum] = torch.real(ifft(self.v))
+                self.tt[self.ioutnum]    = self.t
 
 
-    def fou2real(self):
-        #
-        # Convert from spectral to physical space
-        self.uu = torch.real(ifft(self.vv))
-
-
-    def compute_Ek(self):
-        #
-        # compute all forms of kinetic energy
-        #
-        # Kinetic energy as a function of wavenumber and time
-        self.compute_Ek_kt()
-        # Time-averaged energy spectrum as a function of wavenumber
-        self.Ek_k = torch.sum(self.Ek_kt, 0)/(self.ioutnum+1) # not self.nout because we might not be at the end; ioutnum+1 because the IC is in [0]
-        # Total kinetic energy as a function of time
-        self.Ek_t = torch.sum(self.Ek_kt, 1)
-		# Time-cumulative average as a function of wavenumber and time
-        self.Ek_ktt = torch.cumsum(self.Ek_kt, 0) / torch.arange(1,self.ioutnum+2)[:,None] # not self.nout because we might not be at the end; ioutnum+1 because the IC is in [0] +1 more because we divide starting from 1, not zero
-		# Time-cumulative average as a function of time
-        self.Ek_tt = torch.cumsum(self.Ek_t, 0) / torch.arange(1,self.ioutnum+2)[:,None] # not self.nout because we might not be at the end; ioutnum+1 because the IC is in [0] +1 more because we divide starting from 1, not zero
-
-    def compute_Ek_kt(self):
-        try:
-            self.Ek_kt = 1./2.*torch.real( self.vv.conj()*self.vv / self.N ) * self.dx
-        except FloatingPointError:
-            #
-            # probable overflow because the simulation exploded, try removing the last solution
-            problem=True
-            remove=1
-            self.Ek_kt = torch.zeros([self.nout+1, self.N]) + 1e-313
-            while problem:
-                try:
-                    self.Ek_kt[0:self.nout+1-remove,:] = 1./2.*torch.real( self.vv[0:self.nout+1-remove].conj()*self.vv[0:self.nout+1-remove] / self.N ) * self.dx
-                    problem=False
-                except FloatingPointError:
-                    remove+=1
-                    problem=True
-        return self.Ek_kt
-
-
-    def space_filter(self, k_cut=2):
-        #
-        # spatially filter the time series
-        self.uu_filt  = torch.zeros([self.nout+1, self.N])
-        for n in range(self.nout+1):
-            v_filt = torch.copy(self.vv[n,:])    # copy vv[n,:] (otherwise python treats it as reference and overwrites vv on the next line)
-            v_filt[torch.abs(self.k)>=k_cut] = 0 # set to zero wavenumbers > k_cut
-            self.uu_filt[n,:] = torch.real(ifft(v_filt))
-        #
-        # compute u_resid
-        self.uu_resid = self.uu - self.uu_filt
-
-
-    def space_filter_int(self, k_cut=2, N_int=10):
-        #
-        # spatially filter the time series
-        self.N_int        = N_int
-        self.uu_filt      = torch.zeros([self.nout+1, self.N])
-        self.uu_filt_int  = torch.zeros([self.nout+1, self.N_int])
-        self.x_int        = 2*np.pi*self.L*torch.r_[0:self.N_int]/self.N_int
-        for n in range(self.nout+1):
-            v_filt = torch.copy(self.vv[n,:])   # copy vv[n,:] (otherwise python treats it as reference and overwrites vv on the next line)
-            v_filt[torch.abs(self.k)>=k_cut] = 313e6
-            v_filt_int = v_filt[v_filt != 313e6] * self.N_int/self.N
-            self.uu_filt_int[n,:] = torch.real(ifft(v_filt_int))
-            v_filt[torch.abs(self.k)>=k_cut] = 0
-            self.uu_filt[n,:] = torch.real(ifft(v_filt))
-        #
-        # compute u_resid
-        self.uu_resid = self.uu - self.uu_filt
 
 
 @ut.timer
 def gen_data(dt=0.25, train_seed=22, train_size=int(2e5), test_seed=43, test_num=500, test_size=1000, save_folder=None):
-    #------------------------------------------------------------------------------
-    # define data and initialize simulation
     L    = 200/(2*np.pi)
     N    = 512
     ninittransients = 40000
     tend = dt * (train_size + test_size*test_num + ninittransients)  
     dns  = KS(L=L, N=N, dt=dt, tend=tend)
-    #------------------------------------------------------------------------------
-    # simulate initial transient
     dns.simulate()
-    # convert to physical space
-    dns.fou2real()
-    u = dns.uu[ninittransients+1:]
-    train = u[:train_size].T
-    test = torch.moveaxis(u[train_size:].reshape(test_num, -1, N), 1, 2)
-    test = test[torch.randperm(test.size()[0])]
+    u = dns.uu[:, ninittransients+1:]
+    train = u[:, :train_size]
+    test = torch.moveaxis(u.T[train_size:].reshape(test_num, -1, N), 1, 2)
+    indices = torch.randperm(test.shape[0])
+    test = test[indices]
     if save_folder is not None:
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
-        torch.save(f'{save_folder}/train.npy', train.cpu().numpy())
-        torch.save(f'{save_folder}/test.npy', test.cpu().numpy())
+        torch.save(f'{save_folder}/train.torchy', train.cpu().numpy())
+        torch.save(f'{save_folder}/test.torchy', test.cpu().numpy())
     return train, test
