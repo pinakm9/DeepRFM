@@ -61,13 +61,13 @@ class DeepRF(rfm.DeepRF):
 
     # @ut.timer
     def learn(self, train, seed):
-        X1 = (train.T[:-1][..., self.net.idx])#.flatten(0, 1).T
-        XG = (train.T[:-1][..., self.net.idy])#.flatten(0, 1).T
-        Y = (train.T[1:][..., self.net.idy])#.flatten(0, 1).T
+        X1 = (train.T[:-1][..., self.net.idx]).flatten(0, 1).T
+        XG = (train.T[:-1][..., self.net.idy]).flatten(0, 1).T
+        Y = (train.T[1:][..., self.net.idy]).flatten(0, 1).T
         indices = torch.randperm(X1.shape[1])
-        X1 = X1[:, 0, :]#indices[:100000]]
-        XG = XG[:, 0, :]#indices[:100000]]
-        Y = Y[:, 0, :]#indices[:100000]]
+        X1 = X1[:, indices[:train.shape[1]]]
+        XG = XG[:, indices[:train.shape[1]]]
+        Y = Y[:, indices[:train.shape[1]]]
         X1 = torch.vstack((X1, XG))
 
         with torch.no_grad():
