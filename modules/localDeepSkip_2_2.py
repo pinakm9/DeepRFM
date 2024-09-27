@@ -65,9 +65,9 @@ class DeepRF(rfm.DeepRF):
         XG = (train.T[:-1][..., self.net.idy]).flatten(0, 1).T
         Y = (train.T[1:][..., self.net.idy]).flatten(0, 1).T
         indices = torch.randperm(X1.shape[1])
-        X1 = X1[:, indices[:100000]]
-        XG = XG[:, indices[:100000]]
-        Y = Y[:, indices[:100000]]
+        X1 = X1[:, indices[:train.shape[1]]]
+        XG = XG[:, indices[:train.shape[1]]]
+        Y = Y[:, indices[:train.shape[1]]]
         X1 = torch.vstack((X1, XG))
 
         with torch.no_grad():
