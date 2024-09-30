@@ -161,10 +161,9 @@ def config_test_12(dynamical_system):
                            "test_seed": 43, "test_num": 1, "test_size": int(1e5), "save_folder": None}
         beta_config = {"negative_log10_range": [2, 8], "resolution":5, "n_repeats": 2,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"SkipRFM": [[2048, 1]],\
-                            "LocalSkip_12_1": [[2048, 1]]}
-        arch_configs = [{"LocalSkip_12_1": [[512, 1], [1024, 1], [2048, 1], [4096, 1]],\
-                         "LocalDeepSkip_12_1":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]]}]
+        beta_arch_config = {"LocalSkip_12_1": [[2048, 1]]}
+        arch_configs = [{"LocalSkip_12_1": [[2048, 1]],\
+                         "SkipRFM":[[2048, 1]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
