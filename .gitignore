@@ -2,5 +2,5 @@ data/*
 **/.DS_Store
 !data/L63
 !data/L96
-!data/KS
+!data/KS-12/config_test_12
 modules/__pycache__/*
