@@ -158,7 +158,7 @@ def config_test_12(dynamical_system):
         prediction_time_config = {"error_threshold": 0.25, "dt": 0.25, "Lyapunov_time": 1/0.003}
         train_test_config = {"training_points": int(1e5), "n_repeats": 100}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": train_test_config["training_points"],\
-                           "test_seed": 43, "test_num": 2, "test_size": int(7.5e4), "save_folder": None}
+                           "test_seed": 43, "test_num": 1, "test_size": int(1e5), "save_folder": None}
         beta_config = {"negative_log10_range": [-1, 8], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"SkipRFM": [[2048, 1]],\
