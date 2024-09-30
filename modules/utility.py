@@ -124,5 +124,5 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
 
 
 def autocorr(x):
-    result = numpy.correlate(x, x, mode='full')
+    result = np.correlate(x, x, mode='full')
     return result[result.size//2:]
