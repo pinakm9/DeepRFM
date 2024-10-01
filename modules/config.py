@@ -164,8 +164,7 @@ def config_test_12(dynamical_system):
         beta_arch_config = {"LocalSkip_8_1": [[2048, 1]],\
                             "LocalSkip_12_1": [[2048, 1]]}
         arch_configs = [{"LocalSkip_12_1": [[2048, 1]],\
-                         "LocalSkip_8_1": [[2048, 1]],\
-                         "SkipRFM":[[2048, 1]]}]
+                         "LocalSkip_8_1": [[2048, 1]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
