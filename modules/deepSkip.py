@@ -27,7 +27,7 @@ class DeepSkip(nn.Module):
         return y[..., self.D:]
     
 class DeepRF(rfm.DeepRF):
-    def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False):
+    def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False, *args):
         """
         Args:
             D_r: dimension of the feature 
@@ -64,6 +64,3 @@ class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
         super().__init__(DeepRF, train, test, *drf_args) 
 
-class BetaTester(rfm.BetaTester):
-    def __init__(self, D_r_list: list, B_list: list, train_list: list, test, *drf_args):
-        super().__init__(DeepRF, D_r_list, B_list, train_list, test, *drf_args) 

@@ -1,9 +1,12 @@
 **/.DS_Store
-data/L96-trajectories
+data/L96/train.npy
+data/L96/test.npy
 data/KS-12/train.npy
 data/KS-12/test.npy
 data/KS-22/train.npy
 data/KS-22/test.npy
 data/KS-200/train.npy
 data/KS-200/test.npy
+data/KS-13_5/train.npy
+data/KS-13_5/test.npy
 modules/__pycache__/*

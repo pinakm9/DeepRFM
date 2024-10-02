@@ -45,7 +45,7 @@ class RFM(nn.Module):
 
 
 class DeepRF:
-    def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False):
+    def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False, *args):
         """
         Args:
             D_r: dimension of the feature 
@@ -253,6 +253,8 @@ class BatchDeepRF:
         self.train = train
         self.test = test
         self.drf_args = list(drf_args)
+        if isinstance(self.drf_args[-1], int) and isinstance(self.drf_args[-2], int):
+            self.drf_args[-4] = self.drf_args[-4][:-5] + f'_{self.drf_args[-2]}_{self.drf_args[-1]}' + self.drf_args[-4][-5:]
         self.drf_type = drf_type
         self.drf = self.drf_type(*self.drf_args)
         self.std = torch.std(train, axis=1)
@@ -418,29 +420,33 @@ class BatchDeepRF:
 
 class BetaTester:
 
-    def __init__(self, drf_type, D_r_list: list, B_list: list, train_list: list, test: np.array, *drf_args):
+    def __init__(self, drf_type, D_r_list: list, B_list: list, G_list: list, I_list: list, train_list: list, test: np.array, *drf_args):
         self.train_list = train_list
         self.test = test
         self.D_r_list = D_r_list 
         self.B_list = B_list
+        self.G_list = G_list
+        self.I_list = I_list
         self.drf_args = list(drf_args)
         self.drf_type = drf_type
 
 
-    def get_drf_args(self, D_r, B):
+    def get_drf_args(self, D_r, B, G, I):
         new_drf_args = self.drf_args.copy()
         new_drf_args[:2] = D_r, B 
         new_drf_args[4] = self.train_list[self.B_list.index(B)]
+        new_drf_args[-2] = G
+        new_drf_args[-1] = I
         return new_drf_args
 
 
     def search_beta(self, negative_log10_range:list, resolution:int, n_repeats: int,\
                     training_points: int, **tau_f_kwargs):
         hours = self.estimate_ETA(negative_log10_range, resolution, n_repeats, training_points, **tau_f_kwargs)
-        configs = sorted(list(zip(self.D_r_list, self.B_list)))
+        configs = sorted(list(zip(self.D_r_list, self.B_list, self.G_list, self.I_list)))
         start = time.time()
-        for i, (D_r, B) in enumerate(configs):
-            drf_args = self.get_drf_args(D_r, B)
+        for i, (D_r, B, G, I) in enumerate(configs):
+            drf_args = self.get_drf_args(D_r, B, G, I)
             batch = BatchDeepRF(self.drf_type, self.train_list[i], self.test, *drf_args)
             batch.search_beta(negative_log10_range, resolution, n_repeats, training_points, **tau_f_kwargs)
             print(f"Estimated time remaining for current architecture is {sum(hours)-(time.time()-start)/3600:.2f} hours")
@@ -448,18 +454,18 @@ class BetaTester:
         
 
     def estimate_ETA(self, negative_log10_range:list, resolution:int, n_repeats: int, training_points: int, **tau_f_kwargs):
-        configs = sorted(list(zip(self.D_r_list, self.B_list)))
+        configs = sorted(list(zip(self.D_r_list, self.B_list, self.G_list, self.I_list)))
         hours = []
-        for i, (D_r, B) in enumerate(configs):
+        for i, (D_r, B, G, I) in enumerate(configs):
             start = time.time()
-            drf_args = self.get_drf_args(D_r, B)
+            drf_args = self.get_drf_args(D_r, B, G, I)
             batch = BatchDeepRF(self.drf_type, self.train_list[i], self.test, *drf_args)
             batch.drf.learn(self.train_list[i][:, :training_points], 42)
             batch.get_tau_f(batch.drf, self.test[0], **tau_f_kwargs)
             end = time.time()
             hours.append((end - start) * resolution * (len(negative_log10_range) + 1) * n_repeats / 3600)
-            print(f"Estimated time to find optimal beta for (D_r, B) = ({D_r}, {B}) is {hours[-1]:.2f} hours")
-        print(f"Estimated time to find optimal beta for all (D_r, B) for current architecture is {sum(hours):.2f} hours")
+            print(f"Estimated time to find optimal beta for (D_r, B, G, I) = ({D_r}, {B}, {G}, {I}) is {hours[-1]:.2f} hours")
+        print(f"Estimated time to find optimal beta for all (D_r, B, G, I) for current architecture is {sum(hours):.2f} hours")
         return hours
 
             
