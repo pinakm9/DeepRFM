@@ -203,7 +203,7 @@ def config_test_200(dynamical_system):
 
 
 
-def config_L96_local(dynamical_system):
+def config_local(dynamical_system):
     if dynamical_system == 'L96':
         prediction_time_config = {"error_threshold": 0.25, "dt": 0.01, "Lyapunov_time": 1/2.27}
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
