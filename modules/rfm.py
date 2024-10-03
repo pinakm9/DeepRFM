@@ -255,6 +255,9 @@ class BatchDeepRF:
         self.drf_args = list(drf_args)
         if isinstance(self.drf_args[-1], int) and isinstance(self.drf_args[-2], int):
             self.drf_args[-4] = self.drf_args[-4][:-5] + f'_{self.drf_args[-2]}_{self.drf_args[-1]}' + self.drf_args[-4][-5:]
+            self.local = True 
+        else:
+            self.local = False
         self.drf_type = drf_type
         self.drf = self.drf_type(*self.drf_args)
         self.std = torch.std(train, axis=1)
@@ -405,7 +408,10 @@ class BatchDeepRF:
             pd.DataFrame(results, columns=columns_agg, dtype=float)\
                         .to_csv(file_path_agg, mode='a', index=False, header=not os.path.exists(file_path_agg))
             end = time.time()
-            print(f'Experiments for (D_r, B, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {beta:.2E}) took {end-start:.2E}s')
+            if not self.local:
+                print(f'Experiments for (D_r, B, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {beta:.2E}) took {end-start:.2E}s')
+            else:
+                print(f'Experiments for (D_r, B, G, I, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {self.drf_args[-2]}, {self.drf_args[-1]}, {beta:.2E}) took {end-start:.2E}s')
             k += n_repeats
             if self.drf.device == 'cuda':
                 torch.cuda.empty_cache()
