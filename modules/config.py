@@ -211,8 +211,8 @@ def config_local(dynamical_system):
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
         beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"LocalSkip": [[4096, 1, 1, 1], [4096, 1, 1, 2], [4096, 1, 1, 3]],\
-                            "LocalDeepSkip": [[4096, 1, 2, 1], [4096, 1, 2, 2], [4096, 1, 2, 3]]}
+        beta_arch_config = {"LocalSkip": [[4096, 1, 2, 1], [4096, 1, 2, 2], [4096, 1, 2, 3]],\
+                            "LocalDeepSkip": [[4096, 1, 1, 1], [4096, 1, 1, 2], [4096, 1, 1, 3]]}
         arch_configs = [{"SkipRFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1]],\
                          "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16]],\
                          "LocalSkip_2_2": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
