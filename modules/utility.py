@@ -126,3 +126,9 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
 def autocorr(x):
     result = np.correlate(x, x, mode='full')
     return result[result.size//2:]
+
+
+def smooth(x, y, box_pts=5):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return x, y_smooth
