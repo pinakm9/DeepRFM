@@ -225,7 +225,7 @@ def config_local(dynamical_system):
         train_test_config = {"training_points": int(1e5), "n_repeats": 100}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
-        beta_config = {"negative_log10_range": [-1, 8], "resolution":50, "n_repeats": 2,\
+        beta_config = {"negative_log10_range": [-1, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"LocalSkip":  [[4096, 1, 1, 1], [4096, 1, 1, 2], [4096, 1, 1, 3], [4096, 1, 1, 4], [4096, 1, 1, 5], [4096, 1, 1, 6], [4096, 1, 1, 7], [4096, 1, 1, 8],\
                                            [4096, 1, 2, 1], [4096, 1, 2, 2], [4096, 1, 2, 3], [4096, 1, 2, 4], [4096, 1, 2, 5], [4096, 1, 2, 6], [4096, 1, 2, 7], [4096, 1, 2, 8],\
