@@ -4,6 +4,7 @@ import pandas as pd
 import glob, os
 import numpy as np
 import matplotlib.pyplot as plt
+import count_params as cp
 
 def timer(func):
 	"""
@@ -49,24 +50,33 @@ class ExperimentLogger:
             self.addSingle(object)
 
 
-def collect_beta():
-    for dynamical_system in ['L63', 'L96', 'KS']:
+def collect_beta(smoothing_window=10):
+    for dynamical_system in ['L63', 'L96', 'KS-12', 'KS-22', 'KS-200']:
         folder = f'../data/{dynamical_system}'
         folders = glob.glob(folder + '/*/*/beta')
         for folder in folders:
             print(f"Working on {folder} ...")
             agg = []
+            agg_s = []
             for file in glob.glob(folder + '/*.csv'):
                 filename = os.path.basename(file)
-                if filename != 'beta.csv':
+                if filename != 'beta.csv' and filename != 'beta_s.csv':
                     D_r, B = filename[9:].split('_')
                     D_r, B = int(D_r), int(B.split('.')[0][2:])
                     print(file, D_r, B)
                     data = pd.read_csv(file)
                     idx = np.argmax(data['tau_f_nmse_mean'])
                     agg.append([D_r, B] + data.iloc[idx].to_list())
-            pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
+                    pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
                         .to_csv(folder + '/beta.csv', index=False, mode='w')
+                    for column in list(data.columns):
+                        if column != 'beta':
+                            data[column] = smooth(data[column], smoothing_window)
+                    idx = np.argmax(data['tau_f_nmse_mean'])
+                    agg_s.append([D_r, B] + data.iloc[idx].to_list())
+                pd.DataFrame(sorted(agg_s), columns=['D_r', 'B'] + list(data.columns))\
+                        .to_csv(folder + '/beta_s.csv', index=False, mode='w')
+            
             
 
 def gather_beta(dynamical_system):
@@ -128,7 +138,34 @@ def autocorr(x):
     return result[result.size//2:]
 
 
-def smooth(x, y, box_pts=5):
+def smooth(y, box_pts=10):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
-    return x, y_smooth
+    return y_smooth
+
+
+def get_arch(folder):
+    try:
+        if 'L63' in folder:
+            D = 3
+        elif 'L96' in folder:
+            D = 40
+        elif 'KS-12' in folder:
+            D = 48
+        elif 'KS-22' in folder:
+            D = 64
+        elif 'KS-200' in folder:
+            D = 512
+        architecture, folder = folder.split('/')[-2:]
+        split = folder.split('-')
+        D_r = int(split[1].split('_')[0])
+        B   = int(split[2])
+        if 'Local' in architecture:
+            G, I = architecture.split('_')[1:]
+            G, I = int(G), int(I)
+            args = [D, D_r, B, G, I]
+        else:
+            args = [D, D_r, B]
+        return [architecture] + args + [getattr(cp, architecture)(*args)]
+    except:
+        return []
