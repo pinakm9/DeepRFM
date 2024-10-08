@@ -166,6 +166,6 @@ def get_arch(folder):
             args = [D, D_r, B, G, I]
         else:
             args = [D, D_r, B]
-        return [architecture] + args + [getattr(cp, architecture)(*args)]
+        return [architecture] + args + [getattr(cp, architecture.split('_')[0])(*args)]
     except:
         return []

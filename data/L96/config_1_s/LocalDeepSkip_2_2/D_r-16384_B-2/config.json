@@ -1,0 +1,14 @@
+{
+  "D": 40,
+  "D_r": 16384,
+  "B": 2,
+  "name": "LocalDeepSkip",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 3.88e-07,
+  "normalize": false
+}{
+  "parameters": 1327104
+}{
+  "parameters": 491520
+}

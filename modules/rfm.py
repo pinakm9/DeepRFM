@@ -254,7 +254,9 @@ class BatchDeepRF:
         self.test = test
         self.drf_args = list(drf_args)
         if isinstance(self.drf_args[-1], int) and isinstance(self.drf_args[-2], int):
-            self.drf_args[-4] = self.drf_args[-4][:-5] + f'_{self.drf_args[-2]}_{self.drf_args[-1]}' + self.drf_args[-4][-5:]
+            parts = self.drf_args[-4].split('/')
+            parts[-2] += f'_{self.drf_args[-2]}_{self.drf_args[-1]}'
+            self.drf_args[-4] = '/'.join(parts)
             self.local = True 
         else:
             self.local = False
