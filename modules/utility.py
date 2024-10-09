@@ -169,3 +169,33 @@ def get_arch(folder):
         return [architecture] + args + [getattr(cp, architecture.split('_')[0])(*args)]
     except:
         return []
+    
+
+def summary(dynamical_system, column='tau_f_nmse', verbose=False):
+    root = f'../data/{dynamical_system}'
+    vpts = {}
+    for folder in glob.glob(f'{root}/*'):
+        if 'config' in folder:
+            config = folder.split('/')[-1]
+            vpts[config] = {}
+            for folder_arc in glob.glob(folder + '/*'):
+                arch = folder_arc.split('/')[-1]
+                vpts[config][arch] = {}
+                for subfolder in glob.glob(f'{folder_arc}/*'):
+                    if not 'beta' in subfolder:
+                        args = get_arch(subfolder)
+                        try:
+                            if 'Local' in args[0]:
+                                vpts[config][arch][tuple(args[2:6])] = pd.read_csv(f'{subfolder}/batch_data.csv')[column].mean()
+                            else:
+                                vpts[config][arch][tuple(args[2:4])] = pd.read_csv(f'{subfolder}/batch_data.csv')[column].mean()
+                        except:
+                            pass
+                vpts[config][arch] = {k: v for k, v in sorted(vpts[config][arch].items(), key=lambda item: item[1])}
+    if verbose:
+        for config in vpts:
+            for arch in vpts[config]:
+                print(f"Looking at data for {dynamical_system}-{config}-{arch}:")
+                for k, v in vpts[config][arch].items():
+                    print(f"{k}: {v}")
+    return vpts
