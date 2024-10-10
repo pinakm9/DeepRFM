@@ -23,6 +23,10 @@ def LocalSkip(D, D_r, B, G, I, *args):
     d = (2*I + 1)*G
     return D_r*(d + G + 1)
 
+def LocalRFM(D, D_r, B, G, I, *args):
+    d = (2*I + 1)*G
+    return D_r*(d + G + 1)
+
 def LocalDeepSkip(D, D_r, B, G, I, *args):
     d = (2*I + 2)*G
     return D_r*B*(d + G + 1)
