@@ -49,8 +49,8 @@ def config_1(dynamical_system):
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
         beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"LocalRFM":  [[8192, 1, 8, 1]]}
-        arch_configs = [{"LocalRFM":  [[8192, 1, 8, 1]]}]
+        beta_arch_config = {"LocalRFM":  [[16384, 1, 8, 1]]}
+        arch_configs = [{"LocalRFM":  [[16384, 1, 8, 1]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
