@@ -42,7 +42,7 @@ def config_1(dynamical_system):
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
     
-    elif dynamical_system == 'KS':
+    elif dynamical_system == 'KS-200':
         prediction_time_config = {"error_threshold": 0.25, "dt": 0.25, "Lyapunov_time": 1/0.094}
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
