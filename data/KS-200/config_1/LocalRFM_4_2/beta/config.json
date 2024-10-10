@@ -1,0 +1,14 @@
+{
+  "D": 512,
+  "D_r": 12000,
+  "B": 1,
+  "name": "LocalRFM",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 0.0009640000000000001,
+  "normalize": false
+}{
+  "parameters": 12300000
+}{
+  "parameters": 300000
+}
