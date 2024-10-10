@@ -55,7 +55,7 @@ class DeepRF(rfm.DeepRF):
     # @ut.timer
     def learn(self, train, seed):
         X = (train.T[:-1][..., self.net.idx]).flatten(0, 1).T
-        Y = (train.T[1:][..., self.net.idy] - train.T[:-1][..., self.net.idy]).flatten(0, 1).T
+        Y = (train.T[1:]- train.T[:-1])[..., self.net.idy].flatten(0, 1).T
         indices = torch.randperm(X.shape[1])
         X = X[:, indices[:train.shape[-1]]]
         Y = Y[:, indices[:train.shape[-1]]]
@@ -65,18 +65,6 @@ class DeepRF(rfm.DeepRF):
             self.net.inner[0].bias = nn.Parameter(Wb[:, -1])
             self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, X, Y))
     
-    def learn_(self, train, seed):
-        X = (train.T[:-1][..., self.net.idx])
-        Y = (train.T[1:][..., self.net.idy] - train.T[:-1][..., self.net.idy])
-        Wb, W = 0., 0.
-        with torch.no_grad():
-            for i in range(self.net.Ng):
-                Wb += self.sampler.sample_vec(self.net.D_r, seed=seed)
-                W  += self.compute_W(Wb, X[:, i, :].T, Y[:, i, :].T)
-            self.net.inner[0].weight = nn.Parameter(Wb[:, :-1] / self.net.Ng)
-            self.net.inner[0].bias = nn.Parameter(Wb[:, -1] / self.net.Ng)
-            self.net.outer[0].weight = nn.Parameter(W / self.net.Ng)   
-
 
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
