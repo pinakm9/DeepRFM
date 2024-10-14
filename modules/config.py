@@ -74,6 +74,24 @@ def config_2_s(dynamical_system):
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
+
+def config_3_s(dynamical_system):
+    if dynamical_system == 'L63':
+        prediction_time_config = {"error_threshold": 0.09, "dt": 0.1, "Lyapunov_time": 1/0.91}
+        train_test_config = {"training_points": int(5e4), "n_repeats": 500}
+        data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
+                           "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 2500, "save_folder": None}
+        beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
+                       "training_points": train_test_config["training_points"]}
+        beta_arch_config = {"RFM": [[1024, 1, None, None]],\
+                            "SkipRFM": [[1024, 1, None, None]],\
+                            "DeepSkip":[[1024, 1, None, None]]}
+        arch_configs = [{"RFM": [[1024, 1]],\
+                         "SkipRFM": [[1024, 1]],\
+                         "DeepSkip":[[1024, 16]]}] 
+        return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
+                 "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
+    
     
 
 
