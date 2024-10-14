@@ -65,9 +65,9 @@ def config_2_s(dynamical_system):
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 2500, "save_folder": None}
         beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"RFM": [[1024, 1]],\
-                            "SkipRFM": [[1024, 1]],\
-                            "DeepSkip":[[1024, 1]]}
+        beta_arch_config = {"RFM": [[1024, 1, None, None]],\
+                            "SkipRFM": [[1024, 1, None, None]],\
+                            "DeepSkip":[[1024, 1, None, None]]}
         arch_configs = [{"RFM": [[1024, 1]],\
                          "SkipRFM": [[1024, 1]],\
                          "DeepSkip":[[1024, 16]]}] 
