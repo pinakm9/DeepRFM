@@ -11,7 +11,7 @@ from torch import nn
 import rfm
 
 
-class LocalDeepSkip(nn.Module):
+class LocalDeepRFM(nn.Module):
     def __init__(self, D, D_r, B, G, I):
         super().__init__()
         self.D = D
@@ -33,7 +33,7 @@ class LocalDeepSkip(nn.Module):
     def forward(self, x):
         y = torch.concat((x[..., self.idx], x[..., self.idy]), dim=-1)
         for i in range(self.B):
-            y[..., self.p:self.q] += self.outer[i](torch.tanh(self.inner[i](y)))
+            y[..., self.p:self.q] = self.outer[i](torch.tanh(self.inner[i](y)))
         return y[..., self.p:self.q].flatten(-2, -1)
 
     
@@ -50,7 +50,7 @@ class DeepRF(rfm.DeepRF):
             beta: regularization parameter
         """        
         super().__init__(D_r, B, L0, L1, Uo, beta, name, save_folder, normalize)
-        self.net = LocalDeepSkip(self.sampler.dim, D_r, B, G, I)
+        self.net = LocalDeepRFM(self.sampler.dim, D_r, B, G, I)
         self.net.to(self.device)
         self.logger.update(start=False, kwargs={'parameters': self.count_params()})
         x = (Uo.T[..., self.net.idx]).flatten(0, 1).T
@@ -75,12 +75,11 @@ class DeepRF(rfm.DeepRF):
                 Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
                 self.net.inner[i].weight = nn.Parameter(Wb[:, :-1])
                 self.net.inner[i].bias = nn.Parameter(Wb[:, -1])
-                self.net.outer[i].weight = nn.Parameter(self.compute_W(Wb, X1, Y-X1[self.net.p:self.net.q]))
-                X1[self.net.p:self.net.q] += self.net.outer[i](torch.tanh(self.net.inner[i](X1.T))).T
+                self.net.outer[i].weight = nn.Parameter(self.compute_W(Wb, X1, Y))
+                X1[self.net.p:self.net.q] = self.net.outer[i](torch.tanh(self.net.inner[i](X1.T))).T
 
 
 
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
         super().__init__(DeepRF, train, test, *drf_args) 
-
