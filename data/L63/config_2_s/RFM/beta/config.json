@@ -1,6 +1,6 @@
 {
   "D": 3,
-  "D_r": 1024,
+  "D_r": 16384,
   "B": 1,
   "name": "RFM",
   "L0": 0.4,
@@ -8,5 +8,5 @@
   "beta": 9.640000000000001e-06,
   "normalize": false
 }{
-  "parameters": 7168
+  "parameters": 114688
 }
