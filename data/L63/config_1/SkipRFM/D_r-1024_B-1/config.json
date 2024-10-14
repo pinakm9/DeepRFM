@@ -1,0 +1,14 @@
+{
+  "D": 3,
+  "D_r": 1024,
+  "B": 1,
+  "name": "SkipRFM",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 7.840000000000001e-09,
+  "normalize": false
+}{
+  "parameters": 7168
+}{
+  "parameters": 7168
+}

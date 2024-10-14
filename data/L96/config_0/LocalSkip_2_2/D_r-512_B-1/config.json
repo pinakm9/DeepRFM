@@ -1,0 +1,14 @@
+{
+  "D": 40,
+  "D_r": 512,
+  "B": 1,
+  "name": "ParallelEuler",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 3.1600000000000003e-09,
+  "normalize": false
+}{
+  "parameters": 41472
+}{
+  "parameters": 6656
+}

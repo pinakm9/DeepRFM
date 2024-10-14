@@ -1,0 +1,14 @@
+{
+  "D": 3,
+  "D_r": 16384,
+  "B": 2,
+  "name": "DeepSkip",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 5.14e-08,
+  "normalize": false
+}{
+  "parameters": 114688
+}{
+  "parameters": 327680
+}
