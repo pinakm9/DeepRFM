@@ -51,7 +51,7 @@ def config_1_s(dynamical_system):
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"LocalDeepRFM":  [[11586, 1, 8, 1], [8192, 1, 8, 1], [4096, 1, 8, 1], [2048, 1, 8, 1]],
                             "LocalDeepSkip":  [[11586, 1, 8, 1], [8192, 1, 8, 1], [4096, 1, 8, 1], [2048, 1, 8, 1]]}
-        arch_configs = [{"LocalRFM":  [[14000, 1, 4, 2]]}]
+        arch_configs = [{"LocalDeepRFM":  [[11586, 12, 8, 1]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
