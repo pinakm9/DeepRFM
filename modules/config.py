@@ -6,15 +6,15 @@ def config_1_s(dynamical_system):
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 2500, "save_folder": None}
         beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"RFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                            "SkipRFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                            "DeepSkip":[[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]]}
-        arch_configs = [{"RFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                         "SkipRFM": [[512, 1], [1024, 1], [2048, 1], [4096, 1], [8192, 1], [16384, 1]],\
-                         "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16], [1024, 32],\
-                                     [4096, 1], [4096, 2], [4096, 4], [4096, 8],\
-                                     [8192, 1], [8192, 2], [8192, 4],\
-                                     [16384, 1], [16384, 2]]}] 
+        beta_arch_config = {"RFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
+                            "SkipRFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
+                            "DeepSkip":[[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]]}
+        arch_configs = [{"RFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
+                         "SkipRFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
+                         "DeepSkip":[[1024, 1, None, None], [1024, 2, None, None], [1024, 4, None, None], [1024, 8, None, None], [1024, 16, None, None], [1024, 32, None, None],\
+                                     [4096, 1, None, None], [4096, 2, None, None], [4096, 4, None, None], [4096, 8, None, None],\
+                                     [8192, 1, None, None], [8192, 2, None, None], [8192, 4, None, None],\
+                                     [16384, 1, None, None], [16384, 2, None, None]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
@@ -68,9 +68,9 @@ def config_2_s(dynamical_system):
         beta_arch_config = {"RFM": [[1024, 1, None, None]],\
                             "SkipRFM": [[1024, 1, None, None]],\
                             "DeepSkip":[[1024, 1, None, None]]}
-        arch_configs = [{"RFM": [[1024, 1]],\
-                         "SkipRFM": [[1024, 1]],\
-                         "DeepSkip":[[1024, 16]]}] 
+        arch_configs = [{"RFM": [[1024, 1, None, None]],\
+                         "SkipRFM": [[1024, 1, None, None]],\
+                         "DeepSkip":[[1024, 16, None, None]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
