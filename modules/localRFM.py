@@ -54,11 +54,13 @@ class DeepRF(rfm.DeepRF):
     
     # @ut.timer
     def learn(self, train, seed):
-        X = (train.T[:-1][..., self.net.idx]).flatten(0, 1).T
-        Y = (train.T[1:][..., self.net.idy]).flatten(0, 1).T
-        indices = torch.randperm(X.shape[1])
-        X = X[:, indices[:train.shape[-1]]]
-        Y = Y[:, indices[:train.shape[-1]]]
+        N = train.shape[1]
+        indices = torch.randperm(N-1)[:int((N-2) / self.net.Ng)]
+        X, Y = train[:, indices].T, train[:, indices+1].T
+        X = X[..., self.net.idx].flatten(0, 1).T
+        Y = Y[..., self.net.idy].flatten(0, 1).T
+
+
         with torch.no_grad():
             Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
             self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
