@@ -47,7 +47,7 @@ def config_1_s(dynamical_system):
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
-        beta_config = {"negative_log10_range": [4, 7], "resolution":25, "n_repeats": 5,\
+        beta_config = {"negative_log10_range": [1, 7], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"LocalDeepRFM":  [[11586, 1, 8, 1], [8192, 1, 8, 1], [4096, 1, 8, 1], [2048, 1, 8, 1]],
                             "LocalDeepSkip":  [[11586, 1, 8, 1], [8192, 1, 8, 1], [4096, 1, 8, 1], [2048, 1, 8, 1]]}
