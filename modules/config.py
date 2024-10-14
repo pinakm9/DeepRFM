@@ -85,10 +85,10 @@ def config_3_s(dynamical_system):
         beta_config = {"negative_log10_range": [6, 11], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"RFM": [[1024, 1, None, None]],\
-                            "SkipRFM": [[1024, 1, None, None]],\
-                            "DeepSkip":[[1024, 1, None, None]]}
-        arch_configs = [{"RFM": [[1024, 1]],\
-                         "SkipRFM": [[1024, 1]],\
+                            "SkipRFM": [[16384, 1, None, None]],\
+                            "DeepSkip":[[16384, 1, None, None]]}
+        arch_configs = [{"RFM": [[16384, 1]],\
+                         "SkipRFM": [[16384, 1]],\
                          "DeepSkip":[[1024, 16]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
