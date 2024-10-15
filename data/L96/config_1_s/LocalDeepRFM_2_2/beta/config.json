@@ -1,6 +1,6 @@
 {
   "D": 40,
-  "D_r": 8192,
+  "D_r": 11586,
   "B": 1,
   "name": "LocalDeepRFM",
   "L0": 0.4,
@@ -8,7 +8,7 @@
   "beta": 9.640000000000001e-06,
   "normalize": false
 }{
-  "parameters": 663552
+  "parameters": 938466
 }{
-  "parameters": 122880
+  "parameters": 173790
 }
