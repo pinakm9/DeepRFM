@@ -133,9 +133,9 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
 
 
 
-def autocorr(x):
-    result = np.correlate(x, x, mode='full')
-    return result[result.size//2:]
+def autocorr(x, lags):
+    corr = [1. if l==0 else np.corrcoef(x[l:], x[:-l])[0][1] for l in lags]
+    return np.array(corr)
 
 
 def smooth(y, box_pts=10):
