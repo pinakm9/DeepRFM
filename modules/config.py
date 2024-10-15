@@ -142,9 +142,17 @@ def config_0(dynamical_system):
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
-    
-
-    
+    elif dynamical_system == 'KS-200':
+        prediction_time_config = {"error_threshold": 0.25, "dt": 0.25, "Lyapunov_time": 1/0.094}
+        train_test_config = {"training_points": int(1e5), "n_repeats": 500}
+        data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
+                           "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
+        beta_config = {"negative_log10_range": [5, 6], "resolution":100, "n_repeats": 5,\
+                       "training_points": train_test_config["training_points"]}
+        beta_arch_config = {"LocalDeepRFM":  [[8192, 3, 8, 1], [11586, 3, 8, 1], [13308, 3, 8, 1]]}
+        arch_configs = [{"LocalDeepRFM":  [[8192, 3, 8, 1], [11586, 3, 8, 1], [13308, 3, 8, 1]]}]
+        return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
+                 "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
 
 
 
