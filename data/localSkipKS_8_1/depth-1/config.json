@@ -1,14 +1,14 @@
 {
   "D": 512,
-  "D_r": 2048,
+  "D_r": 4048,
   "B": 4,
   "name": "LocalSkip",
   "L0": 0.4,
   "L1": 3.5,
-  "beta": 6.4e-06,
+  "beta": 0.0001,
   "normalize": false
 }{
-  "parameters": 2099200
+  "parameters": 4149200
 }{
-  "parameters": 335872
+  "parameters": 922944
 }
