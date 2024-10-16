@@ -60,20 +60,50 @@ class DeepRF(rfm.DeepRF):
 
     # @ut.timer
     def learn(self, train, seed):
-
-        X = train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :]
+        x = train.T[:-1][..., self.net.idx]
+        z = train.T[:-1]
         Y = train.T[1:][..., self.net.idy][:, self.net.Ng//2, :].T
-        Z = X + 0.
-        XZ = torch.concat((X, Z), dim=-1)
+        XZ = torch.vstack((x[:, self.net.Ng//2, :].T, x[:, self.net.Ng//2, :].T))
+        print(XZ.shape, Y.shape)
 
         with torch.no_grad():
             for i in range(self.net.B):
                 Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
                 self.net.inner[i].weight = nn.Parameter(Wb[:, :-1])
                 self.net.inner[i].bias = nn.Parameter(Wb[:, -1])
-                self.net.outer[i].weight = nn.Parameter(self.compute_W(Wb, XZ.T, Y))
-                Z = self.net.outer[i](torch.tanh(self.net.inner[i](XZ)))
-                XZ = torch.concat((X, Z), dim=-1)
+                self.net.outer[i].weight = nn.Parameter(self.compute_W(Wb, XZ, Y))
+                y = torch.concat((x, z[..., self.net.idx]), dim=-1)
+                print(y.shape)
+                z = self.net.outer[i](torch.tanh(self.net.inner[i](y))).flatten(-2, -1)
+                print(z.shape)
+                XZ[:self.net.p] = z[..., self.net.idx][:, self.net.Ng//2, :].T
+
+
+    def learn_(self, train, seed):
+
+        idx = torch.arange(-self.net.I, self.net.I+1) + self.net.Ng//2
+
+        x = train.T[:-1][..., self.net.idx]
+        z = train.T[:-1]
+        Y = train.T[1:][..., self.net.idy][:, self.net.Ng//2, :].T
+        XZ = torch.vstack((x[:, self.net.Ng//2, :].T, x[:, self.net.Ng//2, :].T))
+
+        x0 = x[:, idx, :]
+        y = torch.concat((x0, x0), dim=-1)
+        print(XZ.shape, Y.shape)
+        print(x0.shape, y.shape)
+
+        with torch.no_grad():
+            for i in range(self.net.B):
+                Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
+                self.net.inner[i].weight = nn.Parameter(Wb[:, :-1])
+                self.net.inner[i].bias = nn.Parameter(Wb[:, -1])
+                self.net.outer[i].weight = nn.Parameter(self.compute_W(Wb, XZ, Y))
+         
+                z = self.net.outer[i](torch.tanh(self.net.inner[i](y))).flatten(-2, -1)
+                print(z.shape)
+                XZ[:self.net.p] = z.T
+                y = torch.concat((x0, z), dim=-1)
 
 
 
