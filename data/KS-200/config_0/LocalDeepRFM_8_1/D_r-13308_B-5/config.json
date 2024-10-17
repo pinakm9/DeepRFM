@@ -1,0 +1,14 @@
+{
+  "D": 512,
+  "D_r": 13308,
+  "B": 5,
+  "name": "LocalDeepRFM",
+  "L0": 0.4,
+  "L1": 3.5,
+  "beta": 9.550000000000002e-05,
+  "normalize": false
+}{
+  "parameters": 13640700
+}{
+  "parameters": 2728140
+}
