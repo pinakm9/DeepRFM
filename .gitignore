@@ -1,0 +1,14 @@
+*.DS_Store
+*.npy
+modules/__pycache__/*
+data/KS-12/*
+data/KS-22/*
+data/KS/*
+data/KS-200-001/*
+data/KS-200-01/*
+data/temp/*
+data/L63/config_1
+data/L63/config_0
+data/L96/config_0
+data/L96/config_1
+*config.json
