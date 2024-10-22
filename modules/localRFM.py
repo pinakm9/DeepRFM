@@ -63,6 +63,20 @@ class DeepRF(rfm.DeepRF):
             self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
             self.net.inner[0].bias = nn.Parameter(Wb[:, -1])
             self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, X, Y))
+
+
+     # @ut.timer
+    def learn_(self, train, seed):
+       
+        X = train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T
+        Y = train.T[1:][..., self.net.idy][:, self.net.Ng//2, :].T
+
+        with torch.no_grad():
+            Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
+            self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
+            self.net.inner[0].bias = nn.Parameter(Wb[:, -1])
+            self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, X, Y))
+        return X, Y
  
 
 

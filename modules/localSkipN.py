@@ -19,7 +19,9 @@ class LocalSkipN(nn.Module):
         self.B = B
         self.G = G
         self.I = I
+        
         self.Ng = int(self.D / self.G)
+        self.noise = torch.randn(G)[None, :].repeat_interleave(self.Ng, dim=0)
         self.idx = torch.arange(-self.I*self.G, (self.I+1)*self.G) % D
         self.idx = torch.vstack([(self.idx + self.G*i) % D for i in range(self.Ng)])
         self.idy = torch.arange(0, self.G)
@@ -29,7 +31,7 @@ class LocalSkipN(nn.Module):
 
     # @ut.timer
     def forward(self, x):
-        return x + self.outer[0](torch.tanh(self.inner[0](x[..., self.idx]))).flatten(-2, -1)
+        return x + (self.outer[0](torch.tanh(self.inner[0](x[..., self.idx]))) + self.noise[None, :].repeat_interleave(len(x), dim=0)).flatten(-2, -1)
 
     
 class DeepRF(rfm.DeepRF):
@@ -56,7 +58,7 @@ class DeepRF(rfm.DeepRF):
     def learn(self, train, seed):
        
         X = train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T
-        Y = (train.T[1:] - train.T[:-1])[..., self.net.idy][:, self.net.Ng//2, :].T
+        Y = (train.T[1:] - train.T[:-1])[..., self.net.idy][:, self.net.Ng//2, :].T - self.net.noise[0][:, None]
         
 
         with torch.no_grad():
