@@ -302,8 +302,11 @@ class BatchDeepRF:
         start = time.time()
         deep_rf.learn(self.train[:, train_idx:train_idx+self.training_points], model_seed)
         end = time.time()
-        return [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs)) +\
-               [end-start]
+        results = [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs)) +\
+                  [end-start]
+        if self.drf.device == 'cuda':
+                torch.cuda.empty_cache()
+        return results
     
 
     @ut.timer
@@ -333,8 +336,7 @@ class BatchDeepRF:
             print(f'Time taken = {end-start:.2E}s')
             del results
             k += batch_size
-            if self.drf.device == 'cuda':
-                torch.cuda.empty_cache()
+            
 
         if save_best:
             print('Saving the best and worst models ...')
