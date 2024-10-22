@@ -467,6 +467,8 @@ class BetaTester:
             end = time.time()
             hours.append((end - start) * resolution * (len(negative_log10_range) + 1) * n_repeats / 3600)
             print(f"Estimated time to find optimal beta for (D_r, B, G, I) = ({D_r}, {B}, {G}, {I}) is {hours[-1]:.2f} hours")
+            if batch.drf.device == 'cuda':
+                torch.cuda.empty_cache()
         print(f"Estimated time to find optimal beta for all (D_r, B, G, I) for current architecture is {sum(hours):.2f} hours")
         return hours
 
