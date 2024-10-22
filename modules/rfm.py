@@ -59,7 +59,7 @@ class DeepRF:
         self.device = "cuda" if torch.cuda.is_available() else "cpu" # "mps" if torch.backends.mps.is_available() else "cpu")
         Uo.to(self.device)
         self.normalize = normalize
-        self.sampler = sm.GoodRowSampler(L0, L1, self.standardize(Uo))
+        self.sampler = sm.GoodRowSampler(L0, L1, Uo)
       
         self.net = RFM(self.sampler.dim, D_r, B)
         self.net.to(self.device)
@@ -90,8 +90,8 @@ class DeepRF:
         return sum(p.numel() for p in self.net.parameters() if p.requires_grad)
     
     
-    def destandardize(self, data):
-        return data * self.std + self.mean
+    def destandardize(self, data, reference):
+        return data * reference.std() + reference.mean()
 
     
     def forecast(self, u):
