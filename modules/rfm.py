@@ -59,11 +59,8 @@ class DeepRF:
         self.device = "cuda" if torch.cuda.is_available() else "cpu" # "mps" if torch.backends.mps.is_available() else "cpu")
         Uo.to(self.device)
         self.normalize = normalize
-        self.sampler = sm.GoodRowSampler(L0, L1, Uo)
-     
-        # Uo_ = self.set_stats(Uo)
-        self.X = Uo[:, :-1].T
-        self.Y = Uo[:, 1:].T
+        self.sampler = sm.GoodRowSampler(L0, L1, self.standardize(Uo))
+      
         self.net = RFM(self.sampler.dim, D_r, B)
         self.net.to(self.device)
         self.beta = beta
@@ -80,24 +77,21 @@ class DeepRF:
         self.arch = self.net.__class__
     
     # @ut.timer
-    def set_stats(self, train):
-        self.mean = torch.mean(train, axis=1) if self.normalize else torch.zeros(train.shape[0], device=self.device)
-        self.std = torch.std(train, axis=1) + 0e-2 if self.normalize else torch.ones(train.shape[0], device=self.device)
-        Uo_ = (train - self.mean[:, None]) / self.std[:, None] 
-        self.sampler.update(Uo_)
-        return Uo_
+    def standardize(self, train):
+        if self.normalize:
+            self.mean = torch.mean(train) 
+            self.std = torch.std(train) 
+            return (train - self.mean) / self.std
+        else:
+            return train
+        
 
     def count_params(self):
         return sum(p.numel() for p in self.net.parameters() if p.requires_grad)
     
     
-    def correct_(self, u, flag: bool):
-        return (u - self.mean) / self.std if flag  else u * self.std + self.mean 
-    
-    
-    def correct(self, u, flag: bool):
-        return (u - self.mean[:, None]) / self.std[:, None] if flag\
-                else u * self.std[:, None] + self.mean[:, None] 
+    def destandardize(self, data):
+        return data * self.std + self.mean
 
     
     def forecast(self, u):
