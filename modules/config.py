@@ -35,7 +35,7 @@ def config_1_s(dynamical_system):
                                         [8192, 1, 2, 2], [8192, 2, 2, 2], [8192, 4, 2, 2], [8192, 8, 2, 2],\
                                         [16384, 1, 2, 2], [16384, 2, 2, 2], [16384, 4, 2, 2]],\
                         "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16], [1024, 32]]},
-                        {"LocalDeepRFM": [[8192, 2, 2, 2], [11586, 2, 2, 2]]}]
+                        {"LocalDeepSkip": [[16384, 2, 2, 2]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
@@ -58,9 +58,9 @@ def config_1(dynamical_system):
         train_test_config = {"training_points": int(1e5), "n_repeats": 500}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": 2*train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
-        beta_config = {"negative_log10_range": [3, 5], "resolution":25, "n_repeats": 5,\
+        beta_config = {"negative_log10_range": [2, 2], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
-        beta_arch_config = {"LocalDeepRFM":  [[8192, 3, 4, 2]]}
+        beta_arch_config = {"LocalDeepRFM":  [[14000, 2, 4, 2]]}
         arch_configs = [{"LocalDeepRFM":  [[15000, 3, 8, 1]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
