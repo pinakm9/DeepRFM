@@ -364,7 +364,10 @@ class BatchDeepRF:
         self.drf_args[5] = beta
         drf = self.drf_type(*self.drf_args)
         drf.learn(self.train[:, train_idx:train_idx+self.training_points], model_seed)
-        return self.get_tau_f(drf, self.test[test_idx], **tau_f_kwargs) #[beta, model_seed, train_idx, test_idx] +
+        results =  self.get_tau_f(drf, self.test[test_idx], **tau_f_kwargs) #[beta, model_seed, train_idx, test_idx] +
+        if self.drf.device == 'cuda':
+                torch.cuda.empty_cache()
+        return results
        
     
     # @ut.timer
@@ -409,8 +412,7 @@ class BatchDeepRF:
             else:
                 print(f'Experiments for (D_r, B, G, I, beta) = ({self.drf_args[0]}, {self.drf_args[1]}, {self.drf_args[-2]}, {self.drf_args[-1]}, {beta:.2E}) took {end-start:.2E}s')
             k += n_repeats
-            if self.drf.device == 'cuda':
-                torch.cuda.empty_cache()
+            
    
         
 

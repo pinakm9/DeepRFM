@@ -76,6 +76,12 @@ def collect_beta(smoothing_window=10):
                     agg_s.append([D_r, B] + data.iloc[idx].to_list())
                 pd.DataFrame(sorted(agg_s), columns=['D_r', 'B'] + list(data.columns))\
                         .to_csv(folder + '/beta_s.csv', index=False, mode='w')
+    
+    for file in glob.glob('../data/*/*/*/*/config.json'):
+        with open(file, 'r') as json_file:
+            text = json_file.read().split('}')[0]+'}'
+        with open(file, 'w') as json_file:
+            json_file.write(text)
             
             
 

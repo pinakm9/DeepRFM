@@ -35,6 +35,5 @@ class Logger:
             line += '{}={:.3f}\t'.format(key, value[0])
         print(line)
 
-    def get_config(self):
-        return json.loads(self.save_folder + '/config.json')
+ 
 
