@@ -62,7 +62,7 @@ class DeepRF(rfm.DeepRF):
     # @ut.timer
     def learn(self, train, seed):
 
-        noisy_train = train + 0.001 * torch.randn(size=train.shape)
+        noisy_train = train + 0.001 * torch.randn(size=train.shape, device=self.device)
 
         X1 = noisy_train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T
         XG = noisy_train.T[:-1][..., self.net.idy][:, self.net.Ng//2, :].T
