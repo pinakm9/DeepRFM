@@ -53,8 +53,8 @@ class DeepRF(rfm.DeepRF):
         self.net = LocalDeepSkip(self.sampler.dim, D_r, B, G, I)
         self.net.to(self.device)
         self.logger.update(start=False, kwargs={'parameters': self.count_params()})
-        x = (Uo.T[..., self.net.idx]).flatten(0, 1).T
-        y = (Uo.T[..., self.net.idy]).flatten(0, 1).T
+        x = Uo.T[..., self.net.idx][:, self.net.Ng//2, :].T
+        y = Uo.T[..., self.net.idy][:, self.net.Ng//2, :].T
         self.sampler.update(torch.vstack((x, y)))
         self.arch = self.net.__class__
 

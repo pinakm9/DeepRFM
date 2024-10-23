@@ -305,7 +305,7 @@ class BatchDeepRF:
         results = [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs)) +\
                   [end-start]
         if self.drf.device == 'cuda':
-                torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
         return results
     
 

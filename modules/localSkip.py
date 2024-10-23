@@ -48,7 +48,7 @@ class DeepRF(rfm.DeepRF):
         self.net = LocalSkip(self.sampler.dim, D_r, B, G, I)
         self.net.to(self.device)
         self.logger.update(start=False, kwargs={'parameters': self.count_params()})
-        self.sampler.update((Uo.T[:-1][..., self.net.idx]).flatten(0, 1).T)
+        self.sampler.update(Uo.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T)
         self.arch = self.net.__class__
 
     
