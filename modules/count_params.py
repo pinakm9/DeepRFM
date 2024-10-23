@@ -33,3 +33,6 @@ def LocalDeepSkip(D, D_r, B, G, I, *args):
 
 def LocalDeepRFM(D, D_r, B, G, I, *args):
     return LocalDeepSkip(D, D_r, B, G, I, *args)
+
+def LocalDeepRFMN(D, D_r, B, G, I, *args):
+    return LocalDeepSkip(D, D_r, B, G, I, *args)
