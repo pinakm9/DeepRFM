@@ -299,7 +299,7 @@ def config_local(dynamical_system):
         train_test_config = {"training_points": int(1e5), "n_repeats": 100}
         data_gen_config = {"dt": prediction_time_config["dt"], "train_seed": 22, "train_size": train_test_config["training_points"],\
                            "test_seed": 43, "test_num": train_test_config["n_repeats"], "test_size": 1000, "save_folder": None}
-        beta_config = {"negative_log10_range": [3, 8], "resolution":25, "n_repeats": 5,\
+        beta_config = {"negative_log10_range": [2, 6], "resolution":25, "n_repeats": 5,\
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"LocalDeepRFM":  [[4096, 2, 4, 2], [4096, 2, 2, 5], [4096, 2, 8, 1]]}
         arch_configs = [{"LocalSkip_8_1": [[512, 1], [1024, 1], [2048, 1], [8192, 1], [8192, 1], [16384, 1]],\
