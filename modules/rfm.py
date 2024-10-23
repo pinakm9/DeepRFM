@@ -103,7 +103,8 @@ class DeepRF:
 
         Returns: forecasted state
         """
-        return self.net(u)
+        with torch.no_grad():
+            return self.net(u)
 
     
     def loss_wo_reg(self):
@@ -304,8 +305,6 @@ class BatchDeepRF:
         end = time.time()
         results = [exp_idx, model_seed, train_idx, test_idx] + list(self.get_tau_f(deep_rf, self.test[test_idx], **tau_f_kwargs)) +\
                   [end-start]
-        if self.drf.device == 'cuda':
-            torch.cuda.empty_cache()
         return results
     
 
@@ -336,6 +335,8 @@ class BatchDeepRF:
             print(f'Time taken = {end-start:.2E}s')
             del results
             k += batch_size
+            if self.drf.device == 'cuda':
+                torch.cuda.empty_cache()
             
 
         if save_best:
