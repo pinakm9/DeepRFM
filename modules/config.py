@@ -35,7 +35,7 @@ def config_1_s(dynamical_system):
                                         [8192, 1, 2, 2], [8192, 2, 2, 2], [8192, 4, 2, 2], [8192, 8, 2, 2],\
                                         [16384, 1, 2, 2], [16384, 2, 2, 2], [16384, 4, 2, 2]],\
                         "DeepSkip":[[1024, 1], [1024, 2], [1024, 4], [1024, 8], [1024, 16], [1024, 32]]},
-                        {"LocalDeepSkip": [[16384, 2, 1, 4]]}]
+                        {"LocalDeepSkip": [[11585, 2, 1, 4]]}]
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
