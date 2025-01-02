@@ -15,7 +15,8 @@ def config_1_s(dynamical_system):
                                      [4096, 1, None, None], [4096, 2, None, None], [4096, 4, None, None], [4096, 8, None, None],\
                                      [8192, 1, None, None], [8192, 2, None, None], [8192, 4, None, None],\
                                      [16384, 1, None, None], [16384, 2, None, None]]},\
-                        {"DeepSkip":[[2048, 8, None, None], [2048, 16, None, None]]}] 
+                        {"DeepSkip":[[2048, 8, None, None], [2048, 16, None, None]]},\
+                        {"DeepSkip":[[716, 16, None, None]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
     
