@@ -18,8 +18,8 @@ class LocalDeepSkipN(nn.Module):
             D (int): Dimension of the data.
             D_r (int): Dimension of the feature.
             B (int): Number of RF blocks.
-            G (int): Number of groups.
-            I (int): Number of neighboring groups to interact with.
+            G (int): Dimensin of the local state.
+            I (int): Interaction length.
         """
         super().__init__()
         self.D = D

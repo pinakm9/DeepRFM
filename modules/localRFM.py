@@ -18,8 +18,8 @@ class LocalRFM(nn.Module):
             D: dimension of the data
             D_r: dimension of the feature 
             B: number of RF blocks
-            G: number of groups
-            I: number of neighboring groups to interact with
+            G: dimension of the local state
+            I: interaction length
         """
         super().__init__()
         self.D = D

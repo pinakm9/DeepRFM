@@ -20,15 +20,15 @@ class LocalDeepRFMN(nn.Module):
             D (int): Dimension of the data.
             D_r (int): Dimension of the feature.
             B (int): Number of RF blocks.
-            G (int): Number of groups.
-            I (int): Number of neighboring groups to interact with.
+            G (int): Dimension of the local state.
+            I (int): Interaction length.
 
         Attributes:
             D (int): Dimension of the data.
             D_r (int): Dimension of the feature.
             B (int): Number of RF blocks.
-            G (int): Number of groups.
-            I (int): Number of neighboring groups to interact with.
+            G (int): Dinesion of the local state.
+            I (int): Interaction length.
             Ng (int): Number of groups calculated as D divided by G.
             idx (torch.Tensor): Index tensor for neighboring groups.
             idy (torch.Tensor): Index tensor for groups.

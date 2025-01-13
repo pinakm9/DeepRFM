@@ -20,9 +20,8 @@ class LocalSkip(nn.Module):
             D (int): Dimension of the data.
             D_r (int): Dimension of the feature.
             B (int): Number of RF blocks.
-            G (int): Number of groups.
-            I (int): Number of neighboring groups to interact with.
-
+            G (int): Dimension of the local state.
+            I (int): Interaction length.
         Attributes:
             D (int): Dimension of the data.
             D_r (int): Dimension of the feature.
