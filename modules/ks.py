@@ -23,9 +23,31 @@ class KS:
     # see AK Kassam and LN Trefethen, SISC 2005
 
     def __init__(self, L=16, N=128, dt=0.25, nsteps=None, tend=150, iout=1):
-        #
-        # Initialize
-        # L  = float(L); dt = float(dt); tend = float(tend)
+        """
+        Initializes the Kuramoto-Sivashinsky (KS) simulation object with parameters for
+        spatial and temporal discretization and precomputes necessary constants.
+
+        Args:
+            L (float): System size for the spatial domain. Default is 16.
+            N (int): Number of spatial grid points. Default is 128.
+            dt (float): Time step for the simulation. Default is 0.25.
+            nsteps (int, optional): Total number of time steps to simulate. If not provided,
+                it is calculated based on tend and dt.
+            tend (float): End time for the simulation. Default is 150.
+            iout (int): Interval of time steps for saving the output. Default is 1.
+
+        Attributes:
+            L, N, dt, nsteps, iout: Stored parameters for the simulation.
+            dx (float): Spatial grid spacing.
+            nout (int): Number of output time steps.
+            x (np.ndarray): Spatial grid points.
+            k (np.ndarray): Wave numbers for Fourier transform.
+            l (np.ndarray): Fourier multipliers for the linear term.
+            v, t, stepnum, ioutnum: Initial state variables and counters.
+            vv, uu, tt (np.ndarray): Arrays to store simulation results.
+            E, E2, M, r, LR, Q, f1, f2, f3, g: Precomputed ETDRK4 scalar quantities.
+        """
+
         if (nsteps is None):
             nsteps = int(tend/dt)
         else:
@@ -86,6 +108,24 @@ class KS:
         # The time-discretization is done via ETDRK4
         # (exponential time differencing - 4th order Runge Kutta)
         #
+        """
+        Advances the solution of the Kuramoto-Sivashinsky equation by one time step of size dt.
+
+        This function implements the ETDRK4 time-stepping scheme, which is a fourth-order Runge-Kutta
+        method that uses exponential time differencing to handle the linear term in the equation.
+
+        No arguments are required, and the function modifies the state of the object by advancing the
+        time step and updating the solution arrays.
+
+        The function prints the current time step number to the console, using carriage return to
+        overwrite the previous line.
+
+        If an overflow error occurs during the computation, the function catches the error and
+        continues with the next time step. This can be used to detect when the solution becomes
+        unstable or blows up.
+
+        Returns 0 if the computation is successful, or -1 if an overflow error occurs.
+        """
         print(f"step = {self.stepnum}", end='\r')
         v = self.v;                           Nv = self.g*fft(np.real(ifft(v))**2)
         a = self.E2*v + self.Q*Nv;            Na = self.g*fft(np.real(ifft(a))**2)
@@ -98,6 +138,22 @@ class KS:
 
     @ut.timer
     def simulate(self):
+        """
+        Advances the solution of the Kuramoto-Sivashinsky equation by nsteps time steps of size dt.
+
+        The function implements the ETDRK4 time-stepping scheme, which is a fourth-order Runge-Kutta
+        method that uses exponential time differencing to handle the linear term in the equation.
+
+        The function prints the current time step number and overflow counts to the console, using
+        carriage return to overwrite the previous line.
+
+        If an overflow error occurs during the computation, the function catches the error and
+        continues with the next time step. This can be used to detect when the solution becomes
+        unstable or blows up. If an overflow error occurs, the function cuts the time series to the
+        last saved solution and returns -1.
+
+        Returns 0 if the computation is successful, or -1 if an overflow error occurs.
+        """
         o = 0
         for n in range(1, self.nsteps+1):
             try:
@@ -123,8 +179,38 @@ class KS:
 @ut.timer
 def gen_data(dt=0.001, train_seed=22, train_size=int(2e5), test_seed=43, test_num=100, test_size=1000, save_folder=None,\
               L=200/(2*np.pi), N=512, ninittransients = 40000, iout=250):
-    #------------------------------------------------------------------------------
-    # define data and initialize simulation
+    """
+    Generates data for the Kuramoto-Sivashinsky equation.
+
+    This function generates training and test data for the Kuramoto-Sivashinsky equation.
+    The function uses the ETDRK4 time-stepping scheme to advance the solution of the equation
+    over time. The solution is then saved to a NumPy array and returned.
+
+    Parameters:
+        dt (float, optional): The time step size. Defaults to 0.001.
+        train_seed (int, optional): The seed for the random number generator for the training data.
+            Defaults to 22.
+        train_size (int, optional): The number of time steps to save for the training data.
+            Defaults to 2e5.
+        test_seed (int, optional): The seed for the random number generator for the test data.
+            Defaults to 43.
+        test_num (int, optional): The number of test cases to generate. Defaults to 100.
+        test_size (int, optional): The number of time steps to save for each test case.
+            Defaults to 1000.
+        save_folder (str, optional): The folder to save the data to. If None, the data is not saved.
+            Defaults to None.
+        L (float, optional): The length of the system. Defaults to 200/(2*pi).
+        N (int, optional): The number of grid points to use. Defaults to 512.
+        ninittransients (int, optional): The number of initial transients to discard.
+            Defaults to 40000.
+        iout (int, optional): The number of time steps between each saved solution.
+            Defaults to 250.
+
+    Returns:
+        train (numpy array): The training data.
+        test (numpy array): The test data.
+    """
+    
     nsteps = (train_size + test_size*test_num + ninittransients)*iout  
     dns  = KS(L=L, N=N, dt=dt, nsteps=nsteps, iout=iout)
     dns.simulate()

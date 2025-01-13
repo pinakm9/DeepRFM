@@ -3,6 +3,22 @@ import utility as ut
 
 @ut.timer
 def sinkhorn_div(x, y, alpha=None, beta=None, epsilon=0.01, num_iters=200, p=2):
+    """
+    Computes the Sinkhorn divergence between two empirical distributions.
+
+    Args:
+        x (torch.Tensor): The first empirical distribution with shape (n, d).
+        y (torch.Tensor): The second empirical distribution with shape (m, d).
+        alpha (torch.Tensor, optional): Weights for the first distribution. Defaults to uniform weights.
+        beta (torch.Tensor, optional): Weights for the second distribution. Defaults to uniform weights.
+        epsilon (float, optional): Regularization parameter for the Sinkhorn algorithm. Defaults to 0.01.
+        num_iters (int, optional): Maximum number of iterations for the Sinkhorn algorithm. Defaults to 200.
+        p (int, optional): The norm degree for computing pairwise distance. Defaults to 2.
+
+    Returns:
+        float: The computed Sinkhorn divergence between the two distributions.
+    """
+
     c = torch.cdist(x, y, p=p)
  
     if alpha is None:

@@ -12,6 +12,18 @@ import rfm
 
 class DeepSkip(nn.Module):
     def __init__(self, D, D_r, B):
+        """
+        Initialize a DeepSkip model.
+
+        Parameters
+        ----------
+        D : int
+            Input dimensionality.
+        D_r : int
+            Number of random features.
+        B : int
+            Number of random maps.
+        """
         super().__init__()
         self.D = D
         self.D_r = D_r
@@ -21,6 +33,21 @@ class DeepSkip(nn.Module):
 
     # @ut.timer  
     def forward(self, x):
+        """
+        Applies the DeepSkip model to the current state and returns the next state.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor with shape (D,), where D is the input dimensionality.
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor with the same dimensionality as the input, representing
+            the result of the forward pass through the model.
+        """
+
         y = torch.hstack((x, x))
         for i in range(self.B):
             y[..., self.D:] += self.outer[i](torch.tanh(self.inner[i](y)))
@@ -48,6 +75,21 @@ class DeepRF(rfm.DeepRF):
 
     # @ut.timer
     def learn(self, train, seed):
+        """
+        Trains the DeepRF model by learning parameters based on the given training data.
+
+        Parameters
+        ----------
+        train : torch.Tensor
+            The input training data tensor with features and targets.
+        seed : int
+            A seed value for random number generation, ensuring reproducibility.
+
+        Returns
+        -------
+        None
+        """
+
         Y = train[:, 1:]
         X1 = torch.vstack((train[:, :-1], train[:, :-1]))
         with torch.no_grad():
@@ -62,5 +104,21 @@ class DeepRF(rfm.DeepRF):
 
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
+        """
+        Initializes a BatchDeepRF object for training and testing.
+
+        Parameters
+        ----------
+        train : np.array
+            Training data array.
+        test : np.array
+            Test data array.
+        *drf_args : tuple
+            Additional arguments to be passed for the DeepRF initialization.
+
+        Returns
+        -------
+        None
+        """
         super().__init__(DeepRF, train, test, *drf_args) 
 

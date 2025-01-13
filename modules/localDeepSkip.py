@@ -13,6 +13,14 @@ import rfm
 
 class LocalDeepSkip(nn.Module):
     def __init__(self, D, D_r, B, G, I):
+        """
+        Args:
+            D: dimension of the data
+            D_r: dimension of the feature 
+            B: number of RF blocks
+            G: number of groups
+            I: number of neighboring groups to interact with
+        """
         super().__init__()
         self.D = D
         self.D_r = D_r
@@ -31,6 +39,25 @@ class LocalDeepSkip(nn.Module):
 
     # @ut.timer  
     def forward(self, x):
+        """
+        Performs the forward pass for the LocalDeepSkip model.
+
+        This method processes the input tensor `x` through a series of neural network 
+        layers defined by `self.inner` and `self.outer`. It concatenates specific slices 
+        of the input tensor based on predefined indices, applies a transformation through 
+        the inner and outer layers using the hyperbolic tangent activation function, and 
+        returns the processed output.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor for the forward pass.
+
+        Returns
+        -------
+        torch.Tensor
+            The transformed output tensor, flattened across the last two dimensions.
+        """
         y = torch.concat((x[..., self.idx], x[..., self.idy]), dim=-1)
         for i in range(self.B):
             y[..., self.p:self.q] += self.outer[i](torch.tanh(self.inner[i](y)))
@@ -61,7 +88,20 @@ class DeepRF(rfm.DeepRF):
 
     # @ut.timer
     def learn(self, train, seed):
-        
+        """
+        Learns the parameters of the DeepRF model.
+
+        Parameters
+        ----------
+        train : torch.Tensor
+            The training data.
+        seed : int
+            The seed for the random number generator.
+
+        Returns
+        -------
+        None
+        """
         X1 = train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T
         XG = train.T[:-1][..., self.net.idy][:, self.net.Ng//2, :].T
         Y = train.T[1:][..., self.net.idy][:, self.net.Ng//2, :].T
@@ -79,5 +119,21 @@ class DeepRF(rfm.DeepRF):
 
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
+        """
+        Initializes a BatchDeepRF object for training and testing.
+
+        Parameters
+        ----------
+        train : np.array
+            Training data array.
+        test : np.array
+            Test data array.
+        *drf_args : tuple
+            Additional arguments to be passed for the DeepRF initialization.
+
+        Returns
+        -------
+        None
+        """
         super().__init__(DeepRF, train, test, *drf_args) 
 

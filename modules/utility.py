@@ -24,6 +24,27 @@ def timer(func):
 
 class ExperimentLogger:
     def __init__(self, folder, description):
+        """
+        Constructor for ExperimentLogger.
+        
+        Parameters
+        ----------
+        folder : str
+            The folder where log files are saved.
+        description : str
+            A description of the experiment.
+        
+        Attributes
+        ----------
+        folder : str
+            The folder where log files are saved.
+        description : str
+            A description of the experiment.
+        objects : list
+            A list of objects which are to be logged.
+        logFile : str
+            The path to the log file.
+        """
         self.folder = folder
         self.description = description
         self.objects = []
@@ -36,6 +57,14 @@ class ExperimentLogger:
             file.write(f"{descriptionWithNewLine}\n\n\n")
         
     def addSingle(self, object):
+        """
+        Logs a single object's attributes to the log file.
+        
+        Parameters
+        ----------
+        object : object
+            The object to be logged.
+        """
         self.objects.append(object)
         with open(self.logFile, 'a') as file:
             file.write("=======================================================================\n")
@@ -47,11 +76,32 @@ class ExperimentLogger:
             file.write("\n\n")
     
     def add(self, *objects):
+        """
+        Logs multiple objects' attributes to the log file.
+        
+        Parameters
+        ----------
+        objects : object
+            The objects to be logged.
+        """
         for object in objects:
             self.addSingle(object)
 
 
 def collect_beta(smoothing_window=10):
+    """
+    Collects and processes beta values for various dynamical systems.
+
+    This function iterates over a predefined list of dynamical systems,
+    collects beta values from CSV files in specific directories, processes
+    them, and saves the aggregated results. 
+
+    Parameters
+    ----------
+    smoothing_window : int, optional
+        The window size used for smoothing data columns, by default 10.
+    """
+
     for dynamical_system in ['L63', 'L96', 'KS-12', 'KS-22', 'KS-200']:
         folder = f'../data/{dynamical_system}'
         folders = glob.glob(folder + '/*/*/beta')
@@ -87,6 +137,18 @@ def collect_beta(smoothing_window=10):
             
 
 def gather_beta(dynamical_system):
+    """
+    Gathers and processes beta values for a given dynamical system.
+
+    This function iterates over the subdirectories of the given dynamical
+    system, collects beta values from CSV files, processes them, and saves
+    the aggregated results.
+
+    Parameters
+    ----------
+    dynamical_system : str
+        The name of the dynamical system.
+    """
     folder = f'../data/{dynamical_system}'
     folders = glob.glob(folder + '/*/*/beta')
     for folder in folders:
@@ -106,10 +168,55 @@ def gather_beta(dynamical_system):
 
 
 def get_data(dynamical_system, config_id, architecture, D_r, B):
+    """
+    Retrieves data from a CSV file located in a specific directory.
+
+    Parameters
+    ----------
+    dynamical_system : str
+        The name of the dynamical system.
+    config_id : str
+        The configuration ID.
+    architecture : str
+        The architecture name.
+    D_r : int
+        The number of reservoir nodes.
+    B : int
+        The batch size.
+
+    Returns
+    -------
+    DataFrame
+        A pandas DataFrame containing the data.
+    """
     return pd.read_csv(f'../data/{dynamical_system}/config_{config_id}/{architecture}/D_r-{D_r}_B-{B}/batch_data.csv')
 
 
 def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, **tau_f_kwargs):
+    """
+    Creates a waterfall plot for the given data, which is expected to be a 2D numpy array.
+
+    Parameters
+    ----------
+    data : array_like
+        The data to plot.
+    filename : str, optional
+        If provided, the plot is saved to a file with the given name.
+    drf : DeepRF, optional
+        If provided, the forecast is computed using the given DeepRF object and the result is plotted alongside the truth.
+    cmap : str, optional
+        The colormap to use, defaults to 'magma'.
+    levels : int, optional
+        The number of contour levels to use, defaults to 15.
+    width : int, optional
+        The width of the plot in inches, defaults to 10.
+    **tau_f_kwargs : dict
+        Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+    Returns
+    -------
+    None
+    """
     n, m = data.shape
     x, y = np.linspace(1, n, num=n), np.linspace(1, m, num=m) * tau_f_kwargs['dt'] / tau_f_kwargs['Lyapunov_time']
     if drf is None:
@@ -117,8 +224,6 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
         ax = fig.add_subplot(111)
         origin = 'lower'
         im = ax.contourf(x, y, data.T, levels=levels, cmap=cmap, origin=origin)
-        # ax.contour(x, y, data.T, levels=levels, linewidths=0.5, colors='k')
-        # ax.contour(x, y, data.T, origin=origin, linewidths=0.15)
         fig.colorbar(im, ax=[ax])
     else:
         fig = plt.figure(figsize=(5, 5))
@@ -132,7 +237,7 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
         ax1.set_title(r'Forecast')
         fig.colorbar(im, ax=[ax, ax1])
         ax1.set_yticks([])
-    ax.set_ylabel(r'$t/T^{\Lambda_1}$')
+    ax.set_ylabel(r'$t/T_{\Lambda}$')
     ax.set_title(r'Truth')
     if filename is not None:
         plt.savefig(f'../data/plots/{filename}.png', bbox_inches='tight', dpi=300)
@@ -141,17 +246,61 @@ def waterfall(data, filename=None, drf=None, cmap='magma', levels=15, width=10, 
 
 
 def autocorr(x, lags):
+    """
+    Computes the autocorrelation of a given time series for specified lags.
+
+    Parameters
+    ----------
+    x : array_like
+        The input time series data.
+    lags : array_like
+        An array of lag values at which to compute the autocorrelation.
+
+    Returns
+    -------
+    np.ndarray
+        An array containing the autocorrelation values for each specified lag.
+    """
+
     corr = [1. if l==0 else np.corrcoef(x[l:], x[:-l])[0][1] for l in lags]
     return np.array(corr)
 
 
 def smooth(y, box_pts=10):
+    """
+    Smooth a time series using a boxcar average.
+
+    Parameters
+    ----------
+    y : array_like
+        The time series to be smoothed.
+    box_pts : int, optional
+        The window size for the boxcar average. Defaults to 10.
+
+    Returns
+    -------
+    y_smooth : array_like
+        The smoothed time series.
+    """
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth
 
 
 def get_arch(folder):
+    """
+    Extracts the architecture parameters from a given folder name.
+
+    Parameters
+    ----------
+    folder : str
+        The name of the folder to extract the parameters from.
+
+    Returns
+    -------
+    list
+        A list containing the architecture name and its parameters.
+    """
     try:
         if 'L63' in folder:
             D = 3
@@ -179,6 +328,33 @@ def get_arch(folder):
     
 
 def summary(dynamical_system, column='tau_f_nmse', verbose=False, root='../data'):
+    """
+    Summarizes statistical information from batch data files for a given dynamical system.
+
+    This function processes directories and subdirectories related to the specified 
+    dynamical system, extracts statistical values from CSV files, associates them with 
+    the corresponding architecture and configuration, and returns a nested dictionary 
+    structure containing this information.
+
+    Parameters
+    ----------
+    dynamical_system : str
+        The name of the dynamical system to analyze.
+    column : str, optional
+        The column name in the CSV files to use for statistical calculations, by default 'tau_f_nmse'.
+    verbose : bool, optional
+        If True, prints detailed information about the processed data, by default False.
+    root : str, optional
+        The root directory containing data, by default '../data'.
+
+    Returns
+    -------
+    dict
+        A nested dictionary where keys are configuration names and values are dictionaries of 
+        architectures, each containing tuples of architecture-specific parameters mapped to 
+        statistical summaries.
+    """
+
     vpts = {}
     for folder in glob.glob(f'{root}/{dynamical_system}/*'):
         if 'config' in folder:
@@ -214,6 +390,17 @@ def summary(dynamical_system, column='tau_f_nmse', verbose=False, root='../data'
 
 
 def latexify(vpts):
+    """
+    Generate LaTeX code for a table summarizing results.
+
+    Args:
+    vpts: A nested dictionary where keys are configuration names and values are dictionaries of 
+          architectures, each containing tuples of architecture-specific parameters mapped to 
+          statistical summaries.
+
+    Returns:
+    A string containing LaTeX code for a table summarizing results.
+    """
     arch_list = ["RFM", "SkipRFM", "DeepRFM", "DeepSkip", "LocalRFM", "LocalSkip", "LocalDeepRFM", "LocalDeepSkip",\
                   "LocalRFMN",  "LocalSkipN", "LocalDeepRFMN", "LocalDeepSkipN"]
     exist_arch_list = []
@@ -264,6 +451,24 @@ def latexify(vpts):
 
 
 def get_best_models(dynamical_system, config, root='../data'):
+    """
+    Get the best models from the batch data files for a given dynamical system and configuration.
+
+    Parameters
+    ----------
+    dynamical_system : str
+        The name of the dynamical system to analyze.
+    config : str
+        The name of the configuration for which to get the best models.
+    root : str, optional
+        The root directory containing the data, by default '../data'.
+
+    Returns
+    -------
+    list
+        A list of lists, where each sublist contains the architecture name and the best parameters
+        for that architecture in the following order: mean, std, median, min, max, beta, train_time.
+    """
     results = []
     gist = summary(dynamical_system, root=root)[config]
     for architecture in gist:

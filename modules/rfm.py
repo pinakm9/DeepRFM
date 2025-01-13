@@ -24,6 +24,18 @@ torch.set_default_dtype(torch.float64)
 
 class RFM(nn.Module):
     def __init__(self, D, D_r, B):
+        """
+        Initialize a random feature model.
+
+        Parameters
+        ----------
+        D : int
+            input dimensionality
+        D_r : int
+            number of random features
+        B : int
+            number of random maps (not used)
+        """
         super().__init__()
         self.D = D
         self.D_r = D_r
@@ -32,9 +44,30 @@ class RFM(nn.Module):
         self.outer = nn.ModuleList([nn.Linear(self.D_r, self.D, bias=False) for _ in range(1)])
         
     def forward(self, x):
+        """
+        Applies the model to the current state and returns the next state.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape (D,), where D is the input dimensionality.
+
+        Returns:
+            torch.Tensor: Output tensor with the same dimensionality as the input, representing
+                        the result of the forward pass through the model.
+        """
         return self.outer[0](nn.Tanh()(self.inner[0](x)))
     
     def multistep_forecast(self, u, n_steps):
+        """
+        Performs a multi-step forecast using the model.
+
+        Args:
+            u: Initial state of the system, a tensor with dimensionality matching the model input.
+            n_steps: Number of time steps to forecast.
+
+        Returns:
+            A tensor representing the forecasted trajectory over the specified number of steps.
+            The tensor has dimensions (D, n_steps), where D is the dimensionality of the input.
+        """
         trajectory = torch.zeros((self.sampler.dim, n_steps))
         trajectory[:, 0] = u
         for step in range(n_steps - 1):
@@ -78,6 +111,19 @@ class DeepRF:
     
     # @ut.timer
     def standardize(self, train):
+        """
+        Standardize the data to have zero mean and unit standard deviation.
+        
+        Parameters
+        ----------
+        train : torch.Tensor
+            The training data to be standardized.
+        
+        Returns
+        -------
+        standardized : torch.Tensor
+            The standardized data.
+        """
         if self.normalize:
             self.mean = torch.mean(train) 
             self.std = torch.std(train) 
@@ -87,10 +133,34 @@ class DeepRF:
         
 
     def count_params(self):
+        """
+        Counts the number of parameters in the model.
+        
+        Returns
+        -------
+        int
+            The number of parameters.
+        """
         return sum(p.numel() for p in self.net.parameters() if p.requires_grad)
     
     
     def destandardize(self, data, reference):
+        """
+        De-standardizes the data by multiplying by the standard deviation of the reference data
+        and adding the mean of the reference data.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The standardized data to be de-standardized.
+        reference : torch.Tensor
+            The reference data with the original mean and standard deviation.
+        
+        Returns
+        -------
+        destandardized : torch.Tensor
+            The de-standardized data.
+        """
         return data * reference.std() + reference.mean()
 
     
@@ -108,6 +178,12 @@ class DeepRF:
 
     
     def loss_wo_reg(self):
+        """
+        Description: computes the loss without regularization
+        
+        Returns: 
+            total loss between the forecasted and actual data
+        """
         return torch.sum((self.net(self.X) - self.Y)**2) 
     
     
@@ -147,10 +223,28 @@ class DeepRF:
         return torch.linalg.solve(R@R.T + self.beta*self.I_r, R@Y.T).T 
     
     def augmul(self, Wb, X):
+        """
+        Description: matrix multiplication with augmentation
+
+        Args:
+            Wb: matrix of weights
+            X: input
+
+        Returns: augmented matrix multiplication
+        """
         return Wb @ torch.vstack([X, torch.ones(X.shape[-1], device=self.device)])
     
 
     def learn(self, train, seed):
+        """
+        Description: learns the parameters of the DeepRF model
+
+        Args:
+            train: the training data
+            seed: the seed for the random number generator
+
+        Returns: nothing
+        """
         with torch.no_grad():
             Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
             self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
@@ -158,6 +252,11 @@ class DeepRF:
             self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, train[:, :-1], train[:, 1:]))
         
     def read(self):
+        """
+        Description: reads the log of the training process
+
+        Returns: pandas DataFrame of the training log
+        """
         return pd.read_csv(f'{self.save_folder}/train_log.csv')
     
     
@@ -200,33 +299,101 @@ class DeepRF:
         return tau_f_nmse, tau_f_se, nmse, se
     
     def read_tau_f(self, name=''):
+        """
+        Description: reads the tau_f values from the saved CSV files
+
+        Args:
+            name: str, the name of the experiment (default is '')
+
+        Returns: torch tensor of shape (n_traj, ) containing the tau_f values
+        """
         connector = '' if name == '' else '_'
         tau_f_se = np.genfromtxt(f'{self.save_folder}/{name}{connector}tau_f_se.csv', delimiter=',')
         return torch.tensor(tau_f_se)
 
     def get_save_idx(self):
+        """
+        Description: returns a sorted list of save indices for the model
+
+        Returns: list of int, the sorted list of save indices
+        """
         return sorted([int(f.split('_')[-1]) for f in os.listdir(self.save_folder) if f.startswith(self.name)])
     
     def save(self, idx):
+        """
+        Description: saves the model to a file in the save_folder
+
+        Args:
+            idx: int, the index of the model to save
+
+        Returns: nothing
+        """
         torch.save(self.net, self.save_folder + f'/{self.name}_{idx}')
     
     def load(self, idx):
+        """
+        Loads the model from a file in the save_folder.
+
+        Args:
+            idx: int, the index of the model to load.
+
+        Returns:
+            None
+        """
         self.net = torch.load(self.save_folder + f'/{self.name}_{idx}')
 
 
     def get_block_params(self, block_index):
+        """
+        Retrieves the parameters of a specific block in the network.
+
+        Args:
+            block_index (int): The index of the block to retrieve the parameters from.
+
+        Returns:
+            tuple: A tuple containing the weight and bias of the inner layer and the weight of the outer layer for the specified block.
+        """
         return self.net.inner[block_index].weight, self.net.inner[block_index].bias, self.net.outer[block_index].weight
 
     def block_update_(self, block_index, W_in, b_in, W):
+        """
+        Updates the weights of the block at index block_index.
+
+        Args:
+            block_index (int): The index of the block to update.
+            W_in (torch.Tensor): The new weights for the inner layer.
+            b_in (torch.Tensor): The new biases for the inner layer.
+            W (torch.Tensor): The new weights for the outer layer.
+        """
         self.net.inner[block_index].weight = nn.Parameter(W_in)
         self.net.inner[block_index].bias = nn.Parameter(b_in)
         self.net.outer[block_index].weight = nn.Parameter(W)
 
     def block_update(self, block_idx, W_in, b_in, W):
+        """
+        Updates the weights of the blocks at the specified indices.
+
+        Args:
+            block_idx: list or np.array, the indices of the blocks to update.
+            W_in: list or np.array of torch.Tensor, the new weights for the inner layers.
+            b_in: list or np.array of torch.Tensor, the new biases for the inner layers.
+            W: list or np.array of torch.Tensor, the new weights for the outer layers.
+        """
         for i, j in enumerate(block_idx):
             self.block_update_(j, W_in[i], b_in[i], W[i])
 
     def get_block_model(self, block_index):
+        """
+        Returns a block model, i.e. a model with the same architecture as the model used in the DeepRFM,
+        but with the weights of the block at index block_index. This is useful for visualizing the
+        individual blocks of the DeepRFM model.
+
+        Args:
+            block_index: int, the index of the block to get the model for
+
+        Returns:
+            model: a nn.Module, the block model
+        """
         model = self.arch(self.sampler.dim, self.net.D_r, 1)
         W_in, b_in, W = self.get_block_params(block_index)
         self.net.inner[block_index].weight = nn.Parameter(W_in) + 0.
@@ -245,6 +412,18 @@ class DeepRF:
 
 class BatchDeepRF:
     def __init__(self, drf_type, train: np.array, test: np.array, *drf_args):
+        """
+        Description: Initializes a BatchDeepRF object.
+
+        Parameters:
+            drf_type (DeepRF): the type of DeepRF to use
+            train (np.array): the training data
+            test (np.array): the test data
+            *drf_args: additional arguments to pass to drf_type
+
+        Returns:
+            None
+        """
         self.train = train
         self.test = test
         self.drf_args = list(drf_args)
@@ -261,6 +440,20 @@ class BatchDeepRF:
     
     # @ut.timer
     def get_tau_f(self, drf, test, error_threshold=0.05, dt=0.02, Lyapunov_time=1/0.91):
+        """
+        Description: computes forecast time tau_f for the computed surrogate model
+
+        Args:
+            drf: a DeepRF object
+            test: a numpy array of shape (n_dim, validation_points)
+            error_threshold: float, the error threshold for defining tau_f
+            dt: float, the time step for the numerical integration
+            Lyapunov_time: float, the Lyapunov time for the system
+
+        Returns:
+            tau_f: a tensor of shape (4, ) containing the forecast time (in units of Lyapunov times)
+            and the normalized mean squared error (NMSE) and the squared error (SE)
+        """
         with torch.no_grad():
             validation_points = test.shape[-1]
             u_hat = test[:, 0] + 0.
@@ -293,12 +486,47 @@ class BatchDeepRF:
 
 
     def compute_tau_f(self, drf, test, **tau_f_kwargs):
+        """
+        Computes forecast time tau_f using the provided DeepRF model.
+
+        Args:
+            drf: A DeepRF object used for forecasting.
+            test: A numpy array of shape (n_dim, validation_points) representing test trajectories.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        Returns:
+            A tuple of four floats:
+            - tau_f_nmse: Forecast time based on the normalized mean squared error (NMSE).
+            - tau_f_se: Forecast time based on the squared error (SE).
+            - nmse: The final normalized mean squared error.
+            - se: The final squared error.
+        """
         tau_f_nmse, tau_f_se, nmse, se = drf.compute_tau_f(test, **tau_f_kwargs)
         return float(tau_f_nmse[0]), float(tau_f_se[0]), float(nmse[0]), float(se[0])
     
 
 
     def run_single(self, exp_idx:int, model_seed: int, train_idx: int, test_idx: int, **tau_f_kwargs):
+        """
+        Runs a single experiment, training a DeepRF model and computing its tau_f metrics.
+
+        Args:
+            exp_idx (int): The index of the experiment.
+            model_seed (int): The random seed to use for model initialization.
+            train_idx (int): The index of the training data to use.
+            test_idx (int): The index of the testing data to use.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        Returns:
+            A list of seven floats:
+            - exp_idx: The index of the experiment.
+            - model_seed: The random seed used for model initialization.
+            - train_idx: The index of the training data used.
+            - test_idx: The index of the testing data used.
+            - tau_f_nmse: Forecast time based on the normalized mean squared error (NMSE).
+            - tau_f_se: Forecast time based on the squared error (SE).
+            - time: The time taken to run the experiment.
+        """
         deep_rf = self.drf_type(*self.drf_args)
         start = time.time()
         deep_rf.learn(self.train[:, train_idx:train_idx+self.training_points], model_seed)
@@ -310,6 +538,20 @@ class BatchDeepRF:
 
     @ut.timer
     def run(self, training_points: int, n_repeats: int, batch_size: int, save_best=False, **tau_f_kwargs):
+        """
+        Executes a batch of experiments for training the model with varying parameters and saves the results.
+
+        Args:
+            training_points (int): Number of training points to use for each experiment.
+            n_repeats (int): Total number of repeated experiments to run.
+            batch_size (int): Number of experiments to run in each batch.
+            save_best (bool, optional): If True, saves the models with the best and worst performance. Defaults to False.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        The function performs multiple training experiments based on random seeds and indices for training and testing data.
+        Results of each batch are saved to a CSV file, and optional saving of best/worst models is supported.
+        """
+
         self.tau_f_kwargs = tau_f_kwargs
         file_path = '{}/batch_data.csv'.format(self.drf.save_folder)
         if os.path.exists(file_path):
@@ -356,14 +598,45 @@ class BatchDeepRF:
         
 
     
-    def get_data(self):
+    def get_data(self):        
+        """
+        Retrieves batch data from a CSV file located in the DRF save folder.
+
+        Returns:
+            DataFrame: A pandas DataFrame containing the batch data.
+        """
         return pd.read_csv('{}/batch_data.csv'.format(self.drf.save_folder))
     
 
     def get_beta_data(self):
+        """
+        Retrieves the data from a CSV file located in the DRF save folder.
+
+        The file contains the results of beta sweeps for the given DRF model.
+
+        Returns:
+            DataFrame: A pandas DataFrame containing the beta sweep data.
+        """
         return pd.read_csv(f'{self.drf.save_folder}/beta_test_D_r-{self.drf.net.D_r}_B-{self.drf.net.B}.csv')
 
     def try_beta(self, beta, model_seed, train_idx, test_idx, **tau_f_kwargs):
+        """
+        Tries a DeepRF model with a given beta and computes its tau_f metrics.
+
+        Args:
+            beta (float): The value of the beta parameter to use in the model.
+            model_seed (int): The random seed to use for model initialization.
+            train_idx (int): The index of the training data to use.
+            test_idx (int): The index of the testing data to use.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        Returns:
+            A tuple of four floats:
+            - tau_f_nmse: Forecast time based on the normalized mean squared error (NMSE).
+            - tau_f_se: Forecast time based on the squared error (SE).
+            - nmse: The final normalized mean squared error.
+            - se: The final squared error.
+        """
         self.drf_args[5] = beta
         drf = self.drf_type(*self.drf_args)
         drf.learn(self.train[:, train_idx:train_idx+self.training_points], model_seed)
@@ -375,6 +648,20 @@ class BatchDeepRF:
     
     # @ut.timer
     def search_beta(self, negative_log10_range:list, resolution:int, n_repeats: int, training_points: int, **tau_f_kwargs):
+        """
+        Searches for the optimal value of beta in a range of negative power of 10,
+        by training a DeepRF model with a given beta and computing its tau_f metrics.
+
+        Args:
+            negative_log10_range (list): A two-element list containing the start and end of the range of negative power of 10.
+            resolution (int): The number of points to sample in the range.
+            n_repeats (int): The number of times to repeat the experiment.
+            training_points (int): The number of training points to use.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        Returns:
+            None
+        """
         self.tau_f_kwargs = tau_f_kwargs
         # file_path = f'{self.drf.save_folder}/beta_test_D_r-{self.drf.net.D_r}_B-{self.drf.net.B}.csv'
         file_path_agg = f'{self.drf.save_folder}/beta_D_r-{self.drf.net.D_r}_B-{self.drf.net.B}.csv'
@@ -420,6 +707,15 @@ class BatchDeepRF:
         
 
     def get_model(self, idx):
+        """
+        Loads and returns a DeepRF model specified by the given index.
+
+        Args:
+            idx: The index identifying which model to load.
+
+        Returns:
+            A DeepRF object corresponding to the loaded model.
+        """
         self.drf.load(idx)
         return self.drf
 
@@ -428,6 +724,17 @@ class BatchDeepRF:
 class BetaTester:
 
     def __init__(self, drf_type, D_r_list: list, B_list: list, G_list: list, I_list: list, train_list: list, test: np.array, *drf_args):
+        """
+        Parameters:
+            drf_type (DeepRF): the type of DeepRF to use
+            D_r_list (list): list of D_r values to test
+            B_list (list): list of B values to test
+            G_list (list): list of G values to test
+            I_list (list): list of I values to test
+            train_list (list): list of training data, one for each architecture
+            test (np.array): the test data
+            *drf_args: additional arguments to pass to drf_type
+        """
         self.train_list = train_list
         self.test = test
         self.D_r_list = D_r_list 
@@ -439,6 +746,19 @@ class BetaTester:
 
 
     def get_drf_args(self, D_r, B, G, I):
+        """
+        Generates a new set of arguments for a DeepRF model based on the provided values.
+
+        Args:
+            D_r (int): The value for the input dimensionality D_r.
+            B (int): The value for the number of random maps B.
+            G (int): A parameter G to be set in the arguments.
+            I (int): A parameter I to be set in the arguments.
+
+        Returns:
+            list: A list of arguments for initializing a DeepRF model with the specified parameters.
+        """
+
         new_drf_args = self.drf_args.copy()
         new_drf_args[:2] = D_r, B 
         new_drf_args[4] = self.train_list[self.B_list.index(B)]
@@ -449,6 +769,21 @@ class BetaTester:
 
     def search_beta(self, negative_log10_range:list, resolution:int, n_repeats: int,\
                     training_points: int, **tau_f_kwargs):
+        """
+        Searches for the optimal beta value across different configurations of (D_r, B, G, I) by training a DeepRF model
+        for each configuration and evaluating its performance.
+
+        Args:
+            negative_log10_range (list): Specifies the range of negative powers of 10 for beta values to explore.
+            resolution (int): The number of beta values to sample within each decade.
+            n_repeats (int): The number of times to repeat the experiment for each beta value.
+            training_points (int): The number of training data points to use in each experiment.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        This method iterates over all combinations of D_r, B, G, and I, and for each configuration, it initializes a 
+        BatchDeepRF object, performs a beta search, and prints the estimated time remaining for the current architecture.
+        """
+
         hours = self.estimate_ETA(negative_log10_range, resolution, n_repeats, training_points, **tau_f_kwargs)
         configs = sorted(list(zip(self.D_r_list, self.B_list, self.G_list, self.I_list)))
         start = time.time()
@@ -461,6 +796,23 @@ class BetaTester:
         
 
     def estimate_ETA(self, negative_log10_range:list, resolution:int, n_repeats: int, training_points: int, **tau_f_kwargs):
+        """
+        Estimates the time it will take to search for the optimal beta value across all (D_r, B, G, I) configurations
+        for the given architecture. The time is estimated by training a DeepRF model for each configuration, 
+        computing tau_f for a single beta value, and extrapolating the total time based on the number of beta values 
+        and the number of repeats specified in the arguments. The estimated time is then printed for each configuration 
+        and the total estimated time for the architecture is printed at the end.
+
+        Args:
+            negative_log10_range (list): Specifies the range of negative powers of 10 for beta values to explore.
+            resolution (int): The number of beta values to sample within each decade.
+            n_repeats (int): The number of times to repeat the experiment for each beta value.
+            training_points (int): The number of training data points to use in each experiment.
+            **tau_f_kwargs: Additional keyword arguments for tau_f computation, such as error_threshold, dt, and Lyapunov_time.
+
+        Returns:
+            list: A list of estimated times in hours for each configuration and the total estimated time for the architecture.
+        """
         configs = sorted(list(zip(self.D_r_list, self.B_list, self.G_list, self.I_list)))
         hours = []
         for i, (D_r, B, G, I) in enumerate(configs):

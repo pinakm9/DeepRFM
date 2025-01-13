@@ -25,6 +25,16 @@ class GoodRowSampler:
 
     
     def update(self, Uo):
+        """
+        Updates the sampler with new training data.
+
+        This method updates the internal state of the sampler with the new
+        training data tensor, recalculating its dimensionality and limits.
+
+        Args:
+            Uo: torch.Tensor
+                The new training data to update the sampler with.
+        """
         self.Uo = Uo
         self.dim = Uo.T.shape[-1]
         self.lims = torch.stack((torch.min(Uo, dim=1)[0], torch.max(Uo, dim=1)[0]), dim=1)
@@ -61,6 +71,19 @@ class GoodRowSampler:
     
     # @ut.timer
     def sample_vec(self, n_rows, seed=None):
+        """
+        Samples n_rows points in the hypercube defined by the Uo from the __init__ method,
+        with each point having a random bias and direction in the hypercube.
+        The points are chosen according to a uniform distribution in the hypercube.
+        The function returns a tensor of shape (n_rows, dim+1), where the first column
+        is the bias and the remaining columns are the coordinates of the point in the
+        hypercube.
+        Args:
+            n_rows (int): The number of points to sample.
+            seed (int): An optional seed for the random number generator.
+        Returns:
+            A tensor of shape (n_rows, dim+1) with the sampled points.
+        """
         torch.manual_seed(seed if seed is not None else torch.seed())
         # choose bias
         b = (self.L1 - self.L0) * torch.rand(n_rows, device=self.device) + self.L0
@@ -108,7 +131,17 @@ class GoodRowSampler:
     
 
     def sample_(self, sample_b=True):
-     
+        """
+        Samples a point from the hypercube defined by the Uo from the __init__ method,
+        with a random bias and direction in the hypercube.
+        The points are chosen according to a uniform distribution in the hypercube.
+        The function returns a tensor of shape (dim+1,) with the sampled point.
+        If sample_b is set to True, the bias is also sampled.
+        Args:
+            sample_b (bool): Whether to sample the bias or not.
+        Returns:
+            A tensor of shape (dim+1,) with the sampled point and bias.
+        """
         # choose bias
         b = (self.L1 - self.L0) * torch.rand(1, device=self.device)[0] + self.L0
         # choose an orthant
@@ -154,8 +187,21 @@ class GoodRowSampler:
     @ut.timer
     def sample_parallel(self, n_rows, sample_b=True, seed=None):
         """
+        Samples a specified number of rows using the `sample_` method in parallel.
+
+        This function does the same thing as `sample`, but it uses joblib's
+        `Parallel` to do the computation in parallel. This can be much faster
+        when sampling a large number of rows.
+
         Args:
-            n_rows: number of rows to sample
+            n_rows (int): The number of rows to sample.
+            sample_b (bool, optional): If True, sample the bias term as well.
+                Defaults to True.
+            seed (int, optional): A seed for the random number generator.
+                If None, the current seed is used. Defaults to None.
+
+        Returns:
+            torch.Tensor: A tensor of shape (n_rows, dim+1) with the sampled points.
         """
         torch.manual_seed(seed if seed is not None else torch.seed())
         result = Parallel(n_jobs=-1)(delayed(self.sample_)(sample_b) for _ in range(n_rows))
@@ -164,16 +210,47 @@ class GoodRowSampler:
     # @ut.timer
     def sample(self, n_rows, sample_b=True, seed=None):
         """
+        Samples a specified number of rows using the `sample_` method.
+
         Args:
-            n_rows: number of rows to sample
+            n_rows (int): The number of rows to sample.
+            sample_b (bool, optional): A flag indicating whether to sample with the additional component `b`.
+                Defaults to True.
+            seed (int, optional): A seed for random number generation to ensure reproducibility.
+                If None, a random seed will be used.
+
+        Returns:
+            torch.Tensor: A tensor containing the sampled rows.
         """
         torch.manual_seed(seed if seed is not None else torch.seed())
         return torch.vstack([self.sample_(sample_b) for _ in range(n_rows)])
     
     def test_rows(self, rows):
+        """
+        Tests whether each row in the input tensor is a "good row" according to the criteria defined by the `is_row` method.
+
+        Args:
+            rows (torch.Tensor): A tensor containing multiple rows to be tested.
+
+        Returns:
+            torch.Tensor: A 1D tensor of boolean values where each element indicates whether the corresponding row is a "good row".
+        """
         return torch.hstack([self.is_row(row) for row in rows])
     
     def is_row(self, row):
+        """
+        Determines if a given row satisfies the "good row" criteria.
+
+        This method checks whether the provided row, after ensuring its last element is non-negative,
+        lies within the bounds defined by L0 and L1 when projected into the hypercube's orthant.
+
+        Args:
+            row (torch.Tensor): A tensor representing a single row, where the last element is the bias term 
+                                and the preceding elements are the coordinates in the hypercube.
+
+        Returns:
+            bool: True if the row is considered a "good row" according to the defined criteria, False otherwise.
+        """
         if row[-1] < 0:
             row *= -1
         # find orthant
@@ -181,14 +258,42 @@ class GoodRowSampler:
         return (self.x_minus(s) @ row[:-1] + row[-1] > self.L0) and (self.x_plus(s) @ row[:-1] + row[-1] < self.L1)
     
     def range_(self, row):
+        """
+        Computes the range of values in the direction of the given row.
+
+        Args:
+            row (torch.Tensor): A tensor representing a single row, where the last element is the bias term 
+                                and the preceding elements are the coordinates in the hypercube.
+
+        Returns:
+            torch.Tensor: A tensor of shape (2,) containing the minimum and maximum values.
+        """
         y = self.Uo.T @ row[:-1] + row[-1]
         return torch.hstack((torch.min(y), torch.max(y)))
     
     @ut.timer
     def range(self, rows):
+        """
+        Computes the range of values for each row in the input tensor.
+
+        Args:
+            rows (torch.Tensor): A tensor containing multiple rows.
+
+        Returns:
+            torch.Tensor: A tensor of shape (n_rows, 2) containing the minimum and maximum values for each row.
+        """
         return torch.vstack([self.range_(row) for row in rows])
     
     @ut.timer
     def range_parallel(self, rows):
+        """
+        Computes the range of values for each row in the input tensor, using joblib for parallelization.
+
+        Args:
+            rows (torch.Tensor): A tensor containing multiple rows.
+
+        Returns:
+            torch.Tensor: A tensor of shape (n_rows, 2) containing the minimum and maximum values for each row.
+        """
         return torch.vstack(Parallel(n_jobs=-1)(delayed(self.range_)(row) for row in rows))
     

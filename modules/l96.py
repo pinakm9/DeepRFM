@@ -13,6 +13,21 @@ from joblib import Parallel, delayed
 
 # L96 system
 def L96(u, F=10):
+    """
+    Compute the time derivative of the Lorenz-96 system.
+
+    Parameters
+    ----------
+    u : array_like
+        The state of the system.
+    F : float, optional
+        The forcing term. Defaults to 10.
+
+    Returns
+    -------
+    u_dot : array_like
+        The time derivative of the system.
+    """
     u_new = np.zeros_like(u)
     for i in range(len(u)):
         u_new[i] = (u[(i + 1) % len(u)] - u[i - 2]) * u[i - 1] - u[i] + F
@@ -20,11 +35,47 @@ def L96(u, F=10):
 
 # single trajectory generator for L96
 def generate_trajectory(state0, dt, n_steps):
+    """
+    Generate a single trajectory of the Lorenz-96 system.
+
+    Parameters
+    ----------
+    state0 : array_like
+        The initial state of the system.
+    dt : float
+        The time step size.
+    n_steps : int
+        The number of time steps to integrate.
+
+    Returns
+    -------
+    trajectory : array_like
+        The trajectory of the system.
+    """
     return odeint(lambda x, t: L96(x), state0, np.arange(0, n_steps*dt, dt))
 
 # multiple trajectories generator for L96
 # @ut.timer
 def generate_trajectories(num_trajectories, dt, n_steps, dim=40):
+    """
+    Generate multiple trajectories of the Lorenz-96 system.
+
+    Parameters
+    ----------
+    num_trajectories : int
+        The number of trajectories to generate.
+    dt : float
+        The time step size.
+    n_steps : int
+        The number of time steps to integrate.
+    dim : int, optional
+        The dimension of the system. Defaults to 40.
+
+    Returns
+    -------
+    trajectories : array_like
+        The trajectories of the system, of shape (num_trajectories, dim, n_steps).
+    """
     trajectories = np.zeros((num_trajectories, dim, n_steps))
     random_points =  np.random.normal(size=(num_trajectories, dim))
     generate = lambda *args: generate_trajectory(*args)[-1]
@@ -37,6 +88,38 @@ def generate_trajectories(num_trajectories, dt, n_steps, dim=40):
 
 @ut.timer
 def gen_data(dt=0.01, train_seed=22, train_size=int(2e5), test_seed=43, test_num=500, test_size=1000, save_folder=None):
+    """
+    Generate data for the Lorenz-96 system.
+
+    Parameters
+    ----------
+    dt : float, optional
+        The time step size. Defaults to 0.01.
+    train_seed : int, optional
+        The seed for the random number generator for the training data.
+        Defaults to 22.
+    train_size : int, optional
+        The number of time steps to save for the training data.
+        Defaults to 2e5.
+    test_seed : int, optional
+        The seed for the random number generator for the test data.
+        Defaults to 43.
+    test_num : int, optional
+        The number of test cases to generate. Defaults to 500.
+    test_size : int, optional
+        The number of time steps to save for each test case.
+        Defaults to 1000.
+    save_folder : str, optional
+        The folder to save the data to. If None, the data is not saved.
+        Defaults to None.
+
+    Returns
+    -------
+    train : array_like
+        The training data.
+    test : array_like
+        The test data.
+    """
     np.random.seed(train_seed)
     train = generate_trajectories(1, dt, train_size)[0]
     np.random.seed(test_seed)

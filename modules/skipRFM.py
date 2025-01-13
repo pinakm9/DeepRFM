@@ -13,6 +13,18 @@ import rfm
 
 class SkipRFM(nn.Module):
     def __init__(self, D, D_r, B):
+        """
+        Initialize the SkipRFM model.
+
+        Parameters
+        ----------
+        D : int
+            Input dimensionality.
+        D_r : int
+            Number of random features.
+        B : int
+            Number of random maps (always set to 1).
+        """
         super().__init__()
         self.D = D
         self.D_r = D_r
@@ -22,6 +34,16 @@ class SkipRFM(nn.Module):
 
     # @ut.timer  
     def forward(self, x):
+        """
+        Applies the SkipRFM model to input data and returns the transformed output.
+
+        Args:
+            x (torch.Tensor): Input tensor with shape (D,), where D is the input dimensionality.
+
+        Returns:
+            torch.Tensor: Output tensor with the same dimensionality as the input, representing
+                        the result of the forward pass through the model, modified by a skip connection.
+        """
         return x + self.outer[0](torch.tanh(self.inner[0](x)))
     
 
@@ -46,6 +68,20 @@ class DeepRF(rfm.DeepRF):
     
     # @ut.timer
     def learn(self, train, seed):
+        """
+        Learns the parameters of the DeepRF model.
+
+        Parameters
+        ----------
+        train : torch.Tensor
+            The training data.
+        seed : int
+            The seed for the random number generator.
+
+        Returns
+        -------
+        None
+        """
         Y = train[:, 1:]-train[:, :-1]
         with torch.no_grad():
             Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
@@ -58,6 +94,22 @@ class DeepRF(rfm.DeepRF):
             
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
+        """
+        Initializes a BatchDeepRF object for training and testing.
+
+        Parameters
+        ----------
+        train : np.array
+            Training data array.
+        test : np.array
+            Test data array.
+        *drf_args : tuple
+            Additional arguments to be passed to the DeepRF initialization.
+
+        Returns
+        -------
+        None
+        """
         super().__init__(DeepRF, train, test, *drf_args) 
 
 

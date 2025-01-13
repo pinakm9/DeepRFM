@@ -13,6 +13,28 @@ import rfm
 
 class LocalSkipN(nn.Module):
     def __init__(self, D, D_r, B, G, I):
+        """
+        Initializes the LocalSkipN model.
+
+        Args:
+            D (int): Dimension of the data.
+            D_r (int): Dimension of the feature.
+            B (int): Number of RF blocks.
+            G (int): Number of groups.
+            I (int): Number of neighboring groups to interact with.
+
+        Attributes:
+            D (int): Dimension of the data.
+            D_r (int): Dimension of the feature.
+            B (int): Number of RF blocks.
+            G (int): Number of groups.
+            I (int): Number of neighboring groups to interact with.
+            Ng (int): Number of groups calculated as D divided by G.
+            idx (torch.Tensor): Index tensor for neighboring groups.
+            idy (torch.Tensor): Index tensor for groups.
+            inner (nn.ModuleList): List of Linear layers for inner transformation.
+            outer (nn.ModuleList): List of Linear layers for outer transformation.
+        """
         super().__init__()
         self.D = D
         self.D_r = D_r
@@ -29,6 +51,25 @@ class LocalSkipN(nn.Module):
 
     # @ut.timer
     def forward(self, x):
+        """
+        Forward pass for the LocalSkipN model.
+
+        This method processes the input tensor `x` through a series of neural network 
+        layers defined by `self.inner` and `self.outer`. It concatenates specific slices 
+        of the input tensor based on predefined indices, applies a transformation through 
+        the inner and outer layers using the hyperbolic tangent activation function, and 
+        returns the processed output.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor for the forward pass.
+
+        Returns
+        -------
+        torch.Tensor
+            The transformed output tensor, flattened across the last two dimensions.
+        """
         return x + self.outer[0](torch.tanh(self.inner[0](x[..., self.idx]))).flatten(-2, -1)
 
     
@@ -54,7 +95,25 @@ class DeepRF(rfm.DeepRF):
     
     # @ut.timer
     def learn(self, train, seed):
+        """
+        Learns the parameters of the LocalSkipN model using the provided training data.
 
+        This function adds noise to the training data, constructs input and target matrices
+        based on specific slices of the data, and updates the weights and biases of the model's
+        layers using sampled parameters. The process is executed without gradient tracking
+        to optimize performance.
+
+        Parameters
+        ----------
+        train : torch.Tensor
+            The input training data tensor.
+        seed : int
+            A seed value for random number generation, ensuring reproducibility.
+
+        Returns
+        -------
+        None
+        """
         noisy_train = train + 0.001 * torch.randn(size=train.shape, device=self.device)
        
         X = noisy_train.T[:-1][..., self.net.idx][:, self.net.Ng//2, :].T
@@ -71,5 +130,21 @@ class DeepRF(rfm.DeepRF):
 
 class BatchDeepRF(rfm.BatchDeepRF):
     def __init__(self, train, test, *drf_args):
+        """
+        Initializes a BatchDeepRF object for training and testing.
+
+        Parameters
+        ----------
+        train : np.array
+            Training data array.
+        test : np.array
+            Test data array.
+        *drf_args : tuple
+            Additional arguments to be passed to the DeepRF initialization.
+
+        Returns
+        -------
+        None
+        """
         super().__init__(DeepRF, train, test, *drf_args) 
 
