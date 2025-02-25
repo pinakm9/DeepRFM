@@ -193,7 +193,7 @@ class DeepRF:
 
         Args:
             u: state at current time step 
-            n_steps: number of steps to propagate u
+            n_steps: length of the generated trajectory
 
         Returns: forecasted state
         """ 
