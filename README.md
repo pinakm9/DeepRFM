@@ -7,6 +7,11 @@ This repository contains implementations of various hit-and-run Random Feature M
 ## Table of contents
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Navigation](#navigation)
+    - [Modules](#modules)
+        - [Classes for implementing Random Feature Maps](#classes-for-random-feature-maps)
+        - [One-shot hit-and-run sampling of non-trainable parameters](#one-shot-hit-and-run-sampling-of-non-trainable-parameters)
+    - [How to read the data files](#data)
 - [License](#license)
 
 
@@ -60,7 +65,7 @@ DeepRFM/
 │── requirements.txt     # Dependencies list
 ```
 ### Modules
-#### Classes for Random Feature Maps
+#### Classes for implementing Random Feature Maps
 Each Random Feature Map variant has an associated [RFM name].py file in the modules/ directory. This file typically contains 3 main classes named: [RFM name], DeepRF and BatchDeepRF. The first class codes the associated architecture. The second class (DeepRF) allows one to contruct a model using the said architecture and learn a dynamical system from data with the help of the "learn" function. 
 ``` plaintext
 DeepRF(rfm.DeepRF)
@@ -84,8 +89,10 @@ DeepRF(rfm.BatchDeepRF)
 ```
 >**Note**: The functions for computing VPT takes an error_threshold argument which equals $\varepsilon^2$ for $\varepsilon$ in the paper.
 
-#### Hit-and-run sampling of non-trainable parameters
-### Data
+#### One-shot hit-and-run sampling of non-trainable parameters
+modules/oneshot.py contains the class GoodRowSampler whose "sample_vec" method is a parallelized (tensorized) version of the one-shot hit-and-run sampling algorithm in the paper. This method is called by DeepRF.learn to initialize the random non-trainable parameters.
+
+### How to read the data files
 
 The experimental data is mainly contained in the batch_data.csv files which have the following columns:
 ``` plaintext

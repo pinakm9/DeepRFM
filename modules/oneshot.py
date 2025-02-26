@@ -72,12 +72,7 @@ class GoodRowSampler:
     # @ut.timer
     def sample_vec(self, n_rows, seed=None):
         """
-        Samples n_rows points in the hypercube defined by the Uo from the __init__ method,
-        with each point having a random bias and direction in the hypercube.
-        The points are chosen according to a uniform distribution in the hypercube.
-        The function returns a tensor of shape (n_rows, dim+1), where the first column
-        is the bias and the remaining columns are the coordinates of the point in the
-        hypercube.
+        Samples multiple rows using the one-shot hit and run algorithm in parallel.
         Args:
             n_rows (int): The number of points to sample.
             seed (int): An optional seed for the random number generator.
@@ -132,11 +127,7 @@ class GoodRowSampler:
 
     def sample_(self, sample_b=True):
         """
-        Samples a point from the hypercube defined by the Uo from the __init__ method,
-        with a random bias and direction in the hypercube.
-        The points are chosen according to a uniform distribution in the hypercube.
-        The function returns a tensor of shape (dim+1,) with the sampled point.
-        If sample_b is set to True, the bias is also sampled.
+        Samples a single row using the one-shot hit-and-run algorithm.
         Args:
             sample_b (bool): Whether to sample the bias or not.
         Returns:
