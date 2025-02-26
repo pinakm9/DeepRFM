@@ -262,11 +262,20 @@ class DeepRF:
     
     @ut.timer
     def compute_tau_f(self, test, error_threshold=0.05, dt=0.02, Lyapunov_time=1/0.91, name=''):
+       
         """
         Description: computes forecast time tau_f for the computed surrogate model
 
         Args:
-            test: list of test trajectories
+            test: a numpy array of shape (n_dim, validation_points)
+            error_threshold: float, the error threshold for defining VPT and equals epsilon^2 for epsilon in the paper
+            dt: float, the time step for the numerical integration
+            Lyapunov_time: float, the Lyapunov time for the system
+            name: str, optional, the name to use for saving the data
+
+        Returns:
+            tau_f: a tensor of shape (4, ) containing the forecast time (in units of Lyapunov times)
+            and the normalized mean squared error (NMSE) and the squared error (SE)
         """
         self.validation_points = test.shape[-1]
         self.error_threshold = error_threshold
@@ -446,7 +455,7 @@ class BatchDeepRF:
         Args:
             drf: a DeepRF object
             test: a numpy array of shape (n_dim, validation_points)
-            error_threshold: float, the error threshold for defining tau_f
+            error_threshold: float, the error threshold for defining VPT and equals epsilon^2 for epsilon in the paper
             dt: float, the time step for the numerical integration
             Lyapunov_time: float, the Lyapunov time for the system
 

@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 
 ## Usage
-### Directory strcuture
+### Navigation
 This repository is structured as follows:
 ```plaintext 
 DeepRFM/
@@ -38,6 +38,7 @@ DeepRFM/
 |   |── L96              # Data for Lorenz-96 (40D)
 |   |   ├── config_1_s   # Data for Tables in Appendix
 |   |   ├── config_local # Data for experiments to determine the optimal localization scheme
+|── modules/
 |   |──rfm.py            # Base Python classes for all variants
 |   |──skipRFM.py        # Implementation of SkipRFM
 |   |──deepRFM.py        # Implementation of DeepRFM
@@ -49,7 +50,9 @@ DeepRFM/
 |   |──localRFMN.py      # Implementation of LocalRFM that adds noise to the training data
 |   |──localSkipN.py     # Implementation of LocalSkip that adds noise to the training data
 |   |──localDeepRFMN.py  # Implementation of LocalDeepRFM that adds noise to the training data
-|   |──localDeepSkipN.py # Implementation of LocalDeepSkip that adds noise to the training data       
+|   |──localDeepSkipN.py # Implementation of LocalDeepSkip that adds noise to the training data
+|   |──oneshot.py        # Implementation of hit-and-run sampling of the non-trainable parameters
+|   |──wasserstein.py    # Implementation of Sinkhorn divergence in torch 
 │── notebooks/           # Jupyter notebooks for testing code and generating plots
 │── .gitignore           # Git ignore file
 │── LICENSE              # License file
@@ -57,6 +60,7 @@ DeepRFM/
 │── requirements.txt     # Dependencies list
 ```
 ### Modules
+#### Classes for Random Feature Maps
 Each Random Feature Map variant has an associated [RFM name].py file in the modules/ directory. This file typically contains 3 main classes named: [RFM name], DeepRF and BatchDeepRF. The first class codes the associated architecture. The second class (DeepRF) allows one to contruct a model using the said architecture and learn a dynamical system from data with the help of the "learn" function. 
 ``` plaintext
 DeepRF(rfm.DeepRF)
@@ -78,17 +82,37 @@ DeepRF(rfm.BatchDeepRF)
     |── get_data         # reads the results of a batch of experiments from batch_data.csv
     ...
 ```
+>**Note**: The functions for computing VPT takes an error_threshold argument which equals $\varepsilon^2$ for $\varepsilon$ in the paper.
+
+#### Hit-and-run sampling of non-trainable parameters
 ### Data
 
 The experimental data is mainly contained in the batch_data.csv files which have the following columns:
 ``` plaintext
 batch_data.csv
-    |──
+    |── l             # experiment index
+    |── model seed    # seed for generating the non-trainable parameters of the model 
+    |                 # note that on two different machines the same seed may result in different parameters
+    |── train_index   # index specifying training data
+    |── train_index   # index specifying test data
+    |── tau_f_nmse    # VPT as defined in the paper
+    |── tau_f_se      # prediction time tau_f as defined in https://arxiv.org/abs/2007.07383v3
+    |── train_time    # time spent on training a model, includes the time spent on the random initialization which is negligible
+    ...
+```
+Results for the grid-search for $\beta$ are contained in folders named beta which contain beta.csv and beta_s.csv files. beta_s.csv contains smoothed data from beta.csv using a moving average. beta.csv contains the following columns:
+``` plaintext
+beta.csv
+    |── D_r             # model width
+    |── B               # model depth
+    |── beta            # optimal beta
+    |── tau_f_nmse_mean # estimate of E[VPT] 
+    |── tau_f_nmse_std  # estimate of standard deviation of VPT
+    |── tau_f_se_mean   # estimate of E[tau_f] defined in https://arxiv.org/abs/2007.07383v3
+    |── tau_f_se_std    # estimate of standard deviation of tau_f
+    ...
 ```
 
-1. Column "tau_f_nmse" contains the VPT data in batch_data.csv files. 
-8. error_threshold = epsilon^2
-9. config.py contains different configurations used for running batches of experiments on Colab.
 
 ## License
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. See LICENSE for details.
