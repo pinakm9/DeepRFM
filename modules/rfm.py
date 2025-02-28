@@ -23,6 +23,9 @@ DTYPE = 'float64'
 torch.set_default_dtype(torch.float64)
 
 class RFM(nn.Module):
+    """
+    A class for defining a simple random feature architecture
+    """
     def __init__(self, D, D_r, B):
         """
         Initialize a random feature model.
@@ -78,6 +81,9 @@ class RFM(nn.Module):
 
 
 class DeepRF:
+    """
+    A class for defining a surrogate model and acts as the base class for all surrogate models.
+    """
     def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False, *args):
         """
         Args:
@@ -420,6 +426,9 @@ class DeepRF:
 
 
 class BatchDeepRF:
+    """
+    A class for performing batch experiments with DeepRF.
+    """
     def __init__(self, drf_type, train: np.array, test: np.array, *drf_args):
         """
         Description: Initializes a BatchDeepRF object.
@@ -731,6 +740,10 @@ class BatchDeepRF:
 
 
 class BetaTester:
+    """
+    A class for searching for the optimal value of beta 
+    by training a DeepRF model with a given beta and computing its tau_f metrics.
+    """
 
     def __init__(self, drf_type, D_r_list: list, B_list: list, G_list: list, I_list: list, train_list: list, test: np.array, *drf_args):
         """

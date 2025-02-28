@@ -12,6 +12,7 @@ This repository contains implementations of various hit-and-run Random Feature M
         - [Classes for implementing Random Feature Maps](#classes-for-random-feature-maps)
         - [One-shot hit-and-run sampling of non-trainable parameters](#one-shot-hit-and-run-sampling-of-non-trainable-parameters)
     - [How to read the data files](#data)
+- [Tutorials](#tutorials)
 - [License](#license)
 
 
@@ -36,13 +37,17 @@ DeepRFM/
 │   ├── KS-200           # Data for Kuramoto-Sivashinsky (512D),
 |   |   ├── config_1     # Data for Table in Appendix
 |   |   ├── config_local # Data for experiments to determine the optimal localization scheme
+|   |   ...
 │   ├── L63              # Data for Lorenz-63 (3D) 
 |   |   ├── config_0_s   # Data for dt=0.02
 |   |   ├── config_1_s   # Data for dt=0.01
-|   |   ├── config_3_s   # Data for dt=0.1           
+|   |   ├── config_3_s   # Data for dt=0.1
+|   |   ...           
 |   |── L96              # Data for Lorenz-96 (40D)
 |   |   ├── config_1_s   # Data for Tables in Appendix
 |   |   ├── config_local # Data for experiments to determine the optimal localization scheme
+|   |   ...
+|   ...
 |── modules/
 |   |──rfm.py            # Base Python classes for all variants
 |   |──skipRFM.py        # Implementation of SkipRFM
@@ -57,8 +62,13 @@ DeepRFM/
 |   |──localDeepRFMN.py  # Implementation of LocalDeepRFM that adds noise to the training data
 |   |──localDeepSkipN.py # Implementation of LocalDeepSkip that adds noise to the training data
 |   |──oneshot.py        # Implementation of hit-and-run sampling of the non-trainable parameters
-|   |──wasserstein.py    # Implementation of Sinkhorn divergence in torch 
+|   |──wasserstein.py    # Implementation of Sinkhorn divergence in torch
+|   |──config.py         # Configuration dicts for various experiments as a function of the dyanmical system
+|   ... 
 │── notebooks/           # Jupyter notebooks for testing code and generating plots
+│── tutorials/
+    │── colab/           # contains example Colab notebook for running experiments in bulk
+    │── jupyter/         # contains example Jupyer notebook for optimizing beta
 │── .gitignore           # Git ignore file
 │── LICENSE              # License file
 │── README.md            # Project readme file
@@ -87,10 +97,19 @@ DeepRF(rfm.BatchDeepRF)
     |── get_data         # reads the results of a batch of experiments from batch_data.csv
     ...
 ```
+Another important class that appears in rfm.py is BetaTester. This class allows one to optimize $\beta$ in bulk for different model and experiment configurations.
+``` plaintext
+BetaTester 
+    |── search_beta      # looks for the optimal regularization hyperparameter with a grid search for a collection of
+    |                    # model and experiment configurations
+    ...                     
+```
 >**Note**: The functions for computing VPT takes an error_threshold argument which equals $\varepsilon^2$ for $\varepsilon$ in the paper.
 
 #### One-shot hit-and-run sampling of non-trainable parameters
 modules/oneshot.py contains the class GoodRowSampler whose "sample_vec" method is a parallelized (tensorized) version of the one-shot hit-and-run sampling algorithm in the paper. This method is called by DeepRF.learn to initialize the random non-trainable parameters.
+
+>**Tip**: If you are unsure about what a function does, check its docstring with Python's help command.
 
 ### How to read the data files
 
@@ -119,7 +138,8 @@ beta.csv
     |── tau_f_se_std    # estimate of standard deviation of tau_f
     ...
 ```
-
+# Tutorials
+Tutorials can be found in the tutorials folder in the form of notebooks. The colab folder contains a tutorial on how to run bulk training and VPT computations on Colab. The jupyter folder contains a tutorial on how to bulk optimize $\beta$ with BetaTester for different model and experiment configurations on a local machine. The tutorials are set up in this manner to enable users to run code both on cloud and locally. Every module in this repository can be run on both.
 
 ## License
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. See LICENSE for details.

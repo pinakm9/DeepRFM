@@ -88,7 +88,7 @@ class ExperimentLogger:
             self.addSingle(object)
 
 
-def collect_beta(smoothing_window=10):
+def collect_beta(smoothing_window=10, data_folder="../data"):
     """
     Collects and processes beta values for various dynamical systems.
 
@@ -103,7 +103,7 @@ def collect_beta(smoothing_window=10):
     """
 
     for dynamical_system in ['L63', 'L96', 'KS-12', 'KS-22', 'KS-200']:
-        folder = f'../data/{dynamical_system}'
+        folder = f'{data_folder}/{dynamical_system}'
         folders = glob.glob(folder + '/*/*/beta')
         for folder in folders:
             print(f"Working on {folder} ...")
