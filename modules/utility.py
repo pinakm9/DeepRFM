@@ -111,20 +111,22 @@ def collect_beta(smoothing_window=10, data_folder="../data"):
             agg_s = []
             for file in glob.glob(folder + '/*.csv'):
                 filename = os.path.basename(file)
-                if filename != 'beta.csv' and filename != 'beta_s.csv':
-                    D_r, B = filename[9:].split('_')
-                    D_r, B = int(D_r), int(B.split('.')[0][2:])
-                    print(file, D_r, B)
-                    data = pd.read_csv(file)
-                    idx = np.argmax(data['tau_f_nmse_mean'])
-                    agg.append([D_r, B] + data.iloc[idx].to_list())
-                    pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
-                        .to_csv(folder + '/beta.csv', index=False, mode='w')
-                    for column in list(data.columns):
-                        if column != 'beta':
-                            data[column] = smooth(data[column], smoothing_window)
-                    idx = np.argmax(data['tau_f_nmse_mean'])
-                    agg_s.append([D_r, B] + data.iloc[idx].to_list())
+                if filename in ['beta.csv', 'beta_s.csv']:
+                    continue    
+                D_r, B = filename[9:].split('_')
+                D_r, B = int(D_r), int(B.split('.')[0][2:])
+                print(file, D_r, B)
+                data = pd.read_csv(file)
+                # print(data)
+                idx = np.argmax(data['tau_f_nmse_mean'])
+                agg.append([D_r, B] + data.iloc[idx].to_list())
+                pd.DataFrame(sorted(agg), columns=['D_r', 'B'] + list(data.columns))\
+                    .to_csv(folder + '/beta.csv', index=False, mode='w')
+                for column in list(data.columns):
+                    if column != 'beta':
+                        data[column] = smooth(data[column], smoothing_window)
+                idx = np.argmax(data['tau_f_nmse_mean'])
+                agg_s.append([D_r, B] + data.iloc[idx].to_list())
                 pd.DataFrame(sorted(agg_s), columns=['D_r', 'B'] + list(data.columns))\
                         .to_csv(folder + '/beta_s.csv', index=False, mode='w')
     

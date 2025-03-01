@@ -122,7 +122,7 @@ batch_data.csv
     |── train_index   # index specifying training data
     |── train_index   # index specifying test data
     |── tau_f_nmse    # VPT as defined in the paper
-    |── tau_f_se      # prediction time tau_f as defined in https://arxiv.org/abs/2007.07383v3
+    |── tau_f_se      # validity time as defined in https://arxiv.org/abs/2107.06658v3
     |── train_time    # time spent on training a model, includes the time spent on the random initialization which is negligible
     ...
 ```
@@ -134,7 +134,7 @@ beta.csv
     |── beta            # optimal beta
     |── tau_f_nmse_mean # estimate of E[VPT] 
     |── tau_f_nmse_std  # estimate of standard deviation of VPT
-    |── tau_f_se_mean   # estimate of E[tau_f] defined in https://arxiv.org/abs/2007.07383v3
+    |── tau_f_se_mean   # estimate of E[validity time] defined in https://arxiv.org/abs/2107.06658v3
     |── tau_f_se_std    # estimate of standard deviation of tau_f
     ...
 ```

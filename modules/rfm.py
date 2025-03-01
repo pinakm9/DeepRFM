@@ -477,12 +477,12 @@ class BatchDeepRF:
             u_hat = test[:, 0] + 0.
             se_flag, nmse_flag = False, False
             tau_f_se, tau_f_nmse = validation_points-1, validation_points-1
-            se, nmse = 0., 0.
+            se, nmse, norm2 = 0., 0., torch.sum(test**2, dim=0).mean()
 
             for i in range(1, validation_points):
                 u_hat = drf.forecast(u_hat)
                 difference = test[:, i] - u_hat
-                se_ = torch.sum(difference**2) / torch.sum(test[:, i]**2)
+                se_ = torch.sum(difference**2) / norm2#torch.sum(test[:, i]**2)
                 nmse_ = ((difference / self.std)**2).mean()
                 if se_ > error_threshold and se_flag == False:
                     tau_f_se = i-1
@@ -496,7 +496,7 @@ class BatchDeepRF:
                     se, nmse = se_ + 0., nmse_ + 0.
 
             tau_f_nmse *= (dt / Lyapunov_time)
-            tau_f_se *= (dt / Lyapunov_time)
+            tau_f_se *= (dt / 1.) #(Lyapunov_time)
             return torch.tensor([tau_f_nmse, tau_f_se, nmse, se], device=drf.device)
         
 
