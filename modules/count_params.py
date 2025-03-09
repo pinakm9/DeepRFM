@@ -149,6 +149,22 @@ def SkipRFM(D, D_r, *args):
     """
     return RFM(D, D_r)
 
+
+def DeepRFM(D, D_r, B, *args):
+    """
+    Counts the number of parameters in a Deep RFM Random Feature Model (DeepSkip).
+
+    Parameters:
+    D (int): Input dimensionality.
+    D_r (int): Number of random features.
+    B (int): Number of blocks.
+
+    Returns:
+    int: The number of parameters in the model.
+    """
+    return  D_r*B*(3*D + 1)
+
+
 def DeepSkip(D, D_r, B, *args):
     """
     Counts the number of parameters in a Deep Skip Random Feature Model (DeepSkip).

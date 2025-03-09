@@ -87,8 +87,8 @@ class DeepRF:
     def __init__(self, D_r, B, L0, L1, Uo, beta, name='nn', save_folder='.', normalize=False, *args):
         """
         Args:
-            D_r: dimension of the feature 
-            B: number of RF blocks
+            D_r: dimension of the feature vector
+            B: number of RF blocks or depth
             name: name of the DeepRF
             L0: left limit of tanh input for defining good rows
             L1: right limit tanh input for defining good rows
