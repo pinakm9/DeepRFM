@@ -13,6 +13,8 @@ This repository contains implementations of various hit-and-run Random Feature M
         - [One-shot hit-and-run sampling of non-trainable parameters](#one-shot-hit-and-run-sampling-of-non-trainable-parameters)
     - [How to read the data files](#data)
 - [Tutorials](#tutorials)
+    - [Quick Start](#quick-start)
+    - [Notebooks](#notebooks)
 - [License](#license)
 
 
@@ -123,6 +125,7 @@ batch_data.csv
     |── train_index   # index specifying test data
     |── tau_f_nmse    # VPT as defined in the paper
     |── tau_f_se      # validity time as defined in https://arxiv.org/abs/2107.06658v3
+    |                 # (note that before the updates in Feb 2025, this quantity was defined as in https://arxiv.org/abs/2108.03561)
     |── train_time    # time spent on training a model, includes the time spent on the random initialization which is negligible
     ...
 ```
@@ -135,10 +138,36 @@ beta.csv
     |── tau_f_nmse_mean # estimate of E[VPT] 
     |── tau_f_nmse_std  # estimate of standard deviation of VPT
     |── tau_f_se_mean   # estimate of E[validity time] defined in https://arxiv.org/abs/2107.06658v3
+    |                   # (note that before the updates in Feb 2025, this quantity was defined as in https://arxiv.org/abs/2108.03561)
     |── tau_f_se_std    # estimate of standard deviation of tau_f
     ...
 ```
 # Tutorials
+
+## Quick Start
+```sh
+# import necessary modules
+import os, sys
+sys.path.insert(0, "path to DeepRFM/modules") #<--- add modules folder to Python's seach path
+import l96
+import localDeepSkip #<--- import the version of random feature model you'd like to train
+
+# load data
+train, test = l96.gen_data()
+device = "cuda" if torch.cuda.is_available() else "cpu"
+train, test = torch.tensor(train, device=device), torch.tensor(test, device=device)
+
+# set up architecture and hit-and-run
+model = localDeepSkip.DeepRF(D_r=2048, B=2, L0=0.4, L1=3.5, Uo=train, beta=9.64e-9)
+# assign the non-trainable parameters and train the rest
+model.learn(train[:, :int(1e5)], seed=42) 
+# evaluate the model on a test trajectory
+vpt = model.compute_tau_f(test[99:100], error_threshold=0.25, dt=0.01, Lyapunov_time=1/2.27)[0]
+print(f"VPT on the test path = {vpt[0].item():.2f}")
+
+```
+
+## Notebooks
 Tutorials can be found in the tutorials folder in the form of notebooks. The colab folder contains a tutorial on how to run bulk training and VPT computations on Colab. The jupyter folder contains a tutorial on how to bulk optimize $\beta$ with BetaTester for different model and experiment configurations on a local machine. The tutorials are set up in this manner to enable users to run code both on cloud and locally. Every module in this repository can be run on both.
 
 ## License
