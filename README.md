@@ -158,7 +158,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 train, test = torch.tensor(train, device=device), torch.tensor(test, device=device)
 
 # set up architecture and hit-and-run
-model = localDeepSkip.DeepRF(D_r=2048, B=2, L0=0.4, L1=3.5, Uo=train, beta=9.64e-9)
+G, I = 2, 2 #<--- localization scheme
+model = localDeepSkip.DeepRF(D_r=2048, B=2, L0=0.4, L1=3.5, Uo=train, beta=9.64e-9,\
+                            name='surrogate_model', save_folder='.', normalize=False, G=2, I=2)
 # assign the non-trainable parameters and train the rest
 model.learn(train[:, :int(1e5)], seed=42) 
 # evaluate the model on a test trajectory
