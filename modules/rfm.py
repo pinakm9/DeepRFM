@@ -256,6 +256,23 @@ class DeepRF:
             self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
             self.net.inner[0].bias = nn.Parameter(Wb[:, -1])
             self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, train[:, :-1], train[:, 1:]))
+
+    def learn_xy(self, x, y, seed):
+        """
+        Description: learns the parameters of the DeepRF model from x and y data
+
+        Args:
+            x: the input data
+            y: the output data
+            seed: the seed for the random number generator
+
+        Returns: nothing
+        """
+        with torch.no_grad():
+            Wb = self.sampler.sample_vec(self.net.D_r, seed=seed)
+            self.net.inner[0].weight = nn.Parameter(Wb[:, :-1])
+            self.net.inner[0].bias = nn.Parameter(Wb[:, -1])
+            self.net.outer[0].weight = nn.Parameter(self.compute_W(Wb, x, y))
         
     def read(self):
         """
@@ -855,5 +872,42 @@ class BetaTester:
 
 
 
+
+class BatchDeepRF_NonMarkovian(BatchDeepRF):  
+    """
+    A class for performing batch experiments with DeepRF.
+    """
+    def __init__(self, drf_type, train: np.array, test: np.array, *drf_args):
+        super().__init__(drf_type, train, test, *drf_args)
+    
+    # @ut.timer
+    def get_tau_f(self, drf, test, error_threshold=0.05, dt=0.02, Lyapunov_time=1/0.91):
+        """
+        Description: computes forecast time tau_f for the computed surrogate model
+
+        Args:
+            drf: a DeepRF object
+            test: a numpy array of shape (n_dim, validation_points)
+            error_threshold: float, the error threshold for defining VPT and equals epsilon^2 for epsilon in the paper
+            dt: float, the time step for the numerical integration
+            Lyapunov_time: float, the Lyapunov time for the system
+
+        Returns:
+            tau_f: a tensor of shape (4, ) containing the forecast time (in units of Lyapunov times)
+            and the normalized mean squared error (NMSE) and the squared error (SE)
+        """
+        with torch.no_grad():
+            validation_points = test.shape[-1]
+            u_hat = test[:, 0] + 0.
+            se, nmse, norm2 = 0., 0., torch.sum(test**2, dim=0).mean()
+
+            for i in range(1, validation_points):
+                u_hat = drf.forecast(u_hat)
+                difference = test[:, i] - u_hat
+                se_ = torch.sum(difference**2) / norm2#torch.sum(test[:, i]**2)
+                nmse_ = ((difference / self.std)**2).mean()
+        
+            return torch.tensor([np.nan, np.nan, nmse, se], device=drf.device)
+        
 
         

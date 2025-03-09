@@ -7,6 +7,7 @@ data/KS/*
 data/KS-200-001/*
 data/KS-200-01/*
 data/temp/*
+data/pox/*
 data/L63/config_1
 data/L63/config_0
 data/L96/config_0
@@ -14,3 +15,5 @@ data/L96/config_1
 papers/*
 *config.json
 tutorials/jupyter/test.ipynb
+notebooks/pox.ipynb
+modules/pox.py

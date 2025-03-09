@@ -509,3 +509,8 @@ def l2_kde(data1, data2, n_eval=500):
     y2 = pdf2.evaluate(x)
     r = np.sqrt((1./n_eval)*((y1-y2)**2).sum()*delx)
     return r
+
+
+
+    
+  

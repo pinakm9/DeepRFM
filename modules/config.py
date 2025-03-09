@@ -8,14 +8,18 @@ def config_1_s(dynamical_system):
                        "training_points": train_test_config["training_points"]}
         beta_arch_config = {"RFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
                             "SkipRFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
-                            "DeepSkip":[[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]]}
+                            "DeepRFM":[[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]]}
         arch_configs = [{"RFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
                          "SkipRFM": [[512, 1, None, None], [1024, 1, None, None], [2048, 1, None, None], [4096, 1, None, None], [8192, 1, None, None], [16384, 1, None, None]],\
                          "DeepSkip":[[1024, 1, None, None], [1024, 2, None, None], [1024, 4, None, None], [1024, 8, None, None], [1024, 16, None, None], [1024, 32, None, None],\
                                      [4096, 1, None, None], [4096, 2, None, None], [4096, 4, None, None], [4096, 8, None, None],\
                                      [8192, 1, None, None], [8192, 2, None, None], [8192, 4, None, None],\
                                      [16384, 1, None, None], [16384, 2, None, None]]},\
-                        {"DeepSkip":[[2048, 8, None, None], [2048, 16, None, None]]},\
+                        {"DeepRFM":[[1024, 1, None, None], [1024, 2, None, None], [1024, 4, None, None], [1024, 8, None, None], [1024, 16, None, None], [1024, 32, None, None],\
+                                    [2048, 1, None, None], [2048, 2, None, None], [2048, 4, None, None], [2048, 8, None, None], [2048, 16, None, None],\
+                                     [4096, 1, None, None], [4096, 2, None, None], [4096, 4, None, None], [4096, 8, None, None],\
+                                     [8192, 1, None, None], [8192, 2, None, None], [8192, 4, None, None],\
+                                     [16384, 1, None, None], [16384, 2, None, None]]},\
                         {"DeepSkip":[[716, 16, None, None]]}] 
         return {"prediction_time": prediction_time_config, "train_test": train_test_config, "data_gen": data_gen_config,\
                  "beta": beta_config, "beta_arch": beta_arch_config, "arch": arch_configs}
