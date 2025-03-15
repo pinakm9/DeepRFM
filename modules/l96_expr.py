@@ -26,8 +26,8 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
 
     # train model
     start = time.time()
-    model = localDeepSkip.DeepRF(D_r=drf_kwargs["D_r"], B=drf_kwargs["B"], L0=drf_kwargs["L0"], L1=drf_kwargs["L1"], Uo=torch.from_numpy(data[:, :N], device=device), beta=drf_kwargs["beta"],\
-                            name='surrogate_model', save_folder=train_kwargs["save_folder"], normalize=False, G=drf_kwargs["G"], I=drf_kwargs["I"])
+    model = localDeepSkip.DeepRF(drf_kwargs["D_r"], drf_kwargs["B"], drf_kwargs["L0"], drf_kwargs["L1"], torch.from_numpy(data[:, :N], device=device), drf_kwargs["beta"],\
+                           'surrogate_model', train_kwargs["save_folder"], False, drf_kwargs["G"], drf_kwargs["I"])
     model.learn(torch.from_numpy(data[:, :N], device=device), seed=train_kwargs["model_seed"])
     train_time = time.time() - start
     print(f"Model trained for {train_time:.2f} seconds")
