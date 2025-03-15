@@ -351,7 +351,7 @@ class DeepRF:
         """
         return sorted([int(f.split('_')[-1]) for f in os.listdir(self.save_folder) if f.startswith(self.name)])
     
-    def save(self, idx):
+    def save(self, idx=None):
         """
         Description: saves the model to a file in the save_folder
 
@@ -360,9 +360,10 @@ class DeepRF:
 
         Returns: nothing
         """
-        torch.save(self.net, self.save_folder + f'/{self.name}_{idx}')
+        suffix = f'_{idx}' if idx != None else ''
+        torch.save(self.net, self.save_folder + suffix)
     
-    def load(self, idx):
+    def load(self, idx=None):
         """
         Loads the model from a file in the save_folder.
 
@@ -372,7 +373,8 @@ class DeepRF:
         Returns:
             None
         """
-        self.net = torch.load(self.save_folder + f'/{self.name}_{idx}')
+        suffix = f'_{idx}' if idx != None else ''
+        self.net = torch.load(self.save_folder + suffix)
 
 
     def get_block_params(self, block_index):
