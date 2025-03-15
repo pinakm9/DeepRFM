@@ -33,7 +33,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
     print(f"Model trained for {train_time:.2f} seconds")
 
     # save model
-    model.save(None)
+    # model.save(None)
 
     # generate data for VPT
     x = data[:, N]
