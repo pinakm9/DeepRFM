@@ -13,7 +13,7 @@ import count_params as cp
 
 
 @ut.timer
-def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs):
+def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
     if not os.path.exists(train_kwargs["save_folder"]):
         os.makedirs(train_kwargs["save_folder"])
     results = {}
@@ -26,9 +26,9 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs):
 
     # train model
     start = time.time()
-    model = localDeepSkip.DeepRF(D_r=drf_kwargs["D_r"], B=drf_kwargs["B"], L0=drf_kwargs["L0"], L1=drf_kwargs["L1"], Uo=torch.from_numpy(data[:, :N]), beta=drf_kwargs["beta"],\
+    model = localDeepSkip.DeepRF(D_r=drf_kwargs["D_r"], B=drf_kwargs["B"], L0=drf_kwargs["L0"], L1=drf_kwargs["L1"], Uo=torch.from_numpy(data[:, :N], device=device), beta=drf_kwargs["beta"],\
                             name='surrogate_model', save_folder=train_kwargs["save_folder"], normalize=False, G=drf_kwargs["G"], I=drf_kwargs["I"])
-    model.learn(torch.from_numpy(data[:, :N]), seed=train_kwargs["model_seed"])
+    model.learn(torch.from_numpy(data[:, :N], device=device), seed=train_kwargs["model_seed"])
     train_time = time.time() - start
     print(f"Model trained for {train_time:.2f} seconds")
 
@@ -37,7 +37,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs):
 
     # generate data for VPT
     x = data[:, N]
-    Y = model.multistep_forecast(torch.from_numpy(x), eval_kwargs["vpt_steps"]).detach().numpy().T
+    Y = model.multistep_forecast(torch.from_numpy(x, device=device), eval_kwargs["vpt_steps"]).detach().numpy().T
     np.save("{}/vpt_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate VPT
@@ -48,7 +48,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs):
     # generate data for RMSE
     x = data[:, N:N+eval_kwargs["n_RMSE"]]
     t = np.arange(N, N+eval_kwargs["n_RMSE"]) * data_gen_kwargs["dt"]
-    Y = model.forecast(torch.from_numpy(x)).detach().numpy().T
+    Y = model.forecast(torch.from_numpy(x, device=device)).detach().numpy().T
     np.save("{}/rmse_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate RMSE and MAE
@@ -60,14 +60,14 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs):
     # generate data for Wasserstein
     x = data[:, N]
     t = N * data_gen_kwargs["dt"]
-    Y = model.multistep_forecast(torch.from_numpy(x), eval_kwargs["n_sample_w2"]).detach().numpy().T
+    Y = model.multistep_forecast(torch.from_numpy(x, device=device), eval_kwargs["n_sample_w2"]).detach().numpy().T
     # Y = np.squeeze(Y, axis=-1).T
     np.save("{}/w2_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate Wasserstein distance
     Y0 = data[:, N:]
-    A = torch.tensor(Y.T[:eval_kwargs["n_sample_w2"]], dtype=torch.float32)
-    B = torch.tensor(Y0.T[:eval_kwargs["n_sample_w2"]], dtype=torch.float32)
+    A = torch.tensor(Y.T[:eval_kwargs["n_sample_w2"]], dtype=torch.float32, device=device)
+    B = torch.tensor(Y0.T[:eval_kwargs["n_sample_w2"]], dtype=torch.float32, device=device)
     results["W2"] = float(wasserstein.sinkhorn_div(A, B).item())
 
     # add model size and training time
