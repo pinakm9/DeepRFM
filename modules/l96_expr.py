@@ -47,8 +47,10 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
 
     # generate data for RMSE
     x = data[:, N:N+eval_kwargs["n_RMSE"]]
-    t = np.arange(N, N+eval_kwargs["n_RMSE"]) * data_gen_kwargs["dt"]
-    Y = model.forecast(torch.tensor(x, device=device).T).detach().cpu().numpy().T
+    Y = np.zeros_like(x)
+    max_N = 10
+    for i in range(eval_kwargs["n_RMSE"]//max_N):
+        Y[:, i*max_N:(i+1)*max_N] = model.forecast(torch.tensor(x[:, i*max_N:(i+1)*max_N], device=device).T).detach().cpu().numpy().T
     np.save("{}/rmse_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate RMSE and MAE
