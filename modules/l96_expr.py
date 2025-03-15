@@ -37,7 +37,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
 
     # generate data for VPT
     x = data[:, N]
-    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["vpt_steps"]).detach().numpy().T
+    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["vpt_steps"]).detach().cpu().numpy().T
     np.save("{}/vpt_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate VPT
@@ -48,7 +48,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
     # generate data for RMSE
     x = data[:, N:N+eval_kwargs["n_RMSE"]]
     t = np.arange(N, N+eval_kwargs["n_RMSE"]) * data_gen_kwargs["dt"]
-    Y = model.forecast(torch.tensor(x, device=device)).detach().numpy().T
+    Y = model.forecast(torch.tensor(x, device=device)).detach().cpu().numpy().T
     np.save("{}/rmse_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate RMSE and MAE
@@ -60,7 +60,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
     # generate data for Wasserstein
     x = data[:, N]
     t = N * data_gen_kwargs["dt"]
-    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["n_sample_w2"]).detach().numpy().T
+    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["n_sample_w2"]).detach().cpu().numpy().T
     # Y = np.squeeze(Y, axis=-1).T
     np.save("{}/w2_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
