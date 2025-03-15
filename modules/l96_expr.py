@@ -37,7 +37,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
 
     # generate data for VPT
     x = data[:, N]
-    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["vpt_steps"]).detach().cpu().numpy().T
+    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["vpt_steps"]).detach().cpu().numpy()
     np.save("{}/vpt_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
     # calculate VPT
@@ -60,7 +60,7 @@ def run_single(drf_kwargs, data_gen_kwargs, train_kwargs, eval_kwargs, device):
     # generate data for Wasserstein
     x = data[:, N]
     t = N * data_gen_kwargs["dt"]
-    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["n_sample_w2"]).detach().cpu().numpy().T
+    Y = model.multistep_forecast(torch.tensor(x, device=device), eval_kwargs["n_sample_w2"]).detach().cpu().numpy()
     # Y = np.squeeze(Y, axis=-1).T
     np.save("{}/w2_trajectory.npy".format(train_kwargs["save_folder"]), Y)
 
