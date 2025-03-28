@@ -496,7 +496,7 @@ class BatchDeepRF:
             u_hat = test[:, 0] + 0.
             se_flag, nmse_flag = False, False
             tau_f_se, tau_f_nmse = validation_points-1, validation_points-1
-            se, nmse, norm2 = 0., 0., torch.sum(test**2, dim=0).mean()
+            se, nmse, norm2 = 0., 0., (torch.sqrt(torch.sum(test**2, dim=0)).mean())**2
 
             for i in range(1, validation_points):
                 u_hat = drf.forecast(u_hat)
