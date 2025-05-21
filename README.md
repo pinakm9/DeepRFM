@@ -19,7 +19,7 @@ This repository contains implementations of various hit-and-run Random Feature M
 
 
 ## Installation
-The code was tested on Python 3.11.5 (macOS with torch-metal) and 3.11.12 (Colab).
+The code was tested on Python 3.11.5 (macOS with torch-metal) and 3.11.12 (Colab). Note that, torch-metal and torch behave differently and on macOS the code was tested with torch-metal v2.1.1 but for consistency across operating systems we have opted to use torch v2.4.1 in the requirements.txt.
 ```sh
 # Clone the repository
 git clone https://github.com/pinakm9/DeepRFM.git
