@@ -12,6 +12,7 @@ data/L63/config_1
 data/L63/config_0
 data/L96/config_0
 data/L96/config_1
+data/plots/final/fonts/*
 papers/*
 *config.json
 tutorials/jupyter/test.ipynb

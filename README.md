@@ -19,7 +19,7 @@ This repository contains implementations of various hit-and-run Random Feature M
 
 
 ## Installation
-The code was tested on Python 3.11.5.
+The code was tested on Python 3.11.5 (macOS) and 3.11.12 (Colab).
 ```sh
 # Clone the repository
 git clone https://github.com/pinakm9/DeepRFM.git
